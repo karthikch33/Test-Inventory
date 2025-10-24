@@ -28,6 +28,10 @@ urlpatterns = [
     path('api/Get_Post_Load_Report/<int:pre_id>/<int:post_id>/', views.Get_Post_Load_Report, name='Get_Post_Load_Report'),
     path('api/Get_Post_Load_Pivot/<int:pre_id>/<int:post_id>/', views.Get_Post_Load_Pivot, name='Get_Post_Load_Pivot'),
     path('api/get_tables_by_project/<int:pid>/', views.get_tables_by_project, name='get_tables_by_project'),
+    
+    
+    
+    path('api/read_excel_and_return_json/', views.read_excel_and_return_json, name='read_excel_and_return_json'),
 
 
 

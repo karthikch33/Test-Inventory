@@ -263,6 +263,29 @@ import pandas as pd
 # df.to_excel('output.xlsx', index=False)
 
   
+
+
+
+@api_view(['POST'])
+def read_excel_and_return_json(request):
+    file_obj = request.FILES.get('file')
+    if not file_obj:
+        return Response({"error": "No file uploaded"}, status=400)
+
+    try:
+        df = pd.read_excel(file_obj, sheet_name=0)
+        expected_cols = ['Business Scenario', 'Scenario Description', 'Status']
+        if not all(any(expected_col.lower() == col.lower() for col in df.columns) for expected_col in expected_cols):
+            return Response({"error": "Required columns missing in Excel sheet"}, status=400)
+        desc_col_name = next(col for col in df.columns if col.lower() == "scenario description".lower())
+        desc_map = {i+1: desc for i, desc in enumerate(df[desc_col_name].astype(str).tolist())}
+
+        return Response(desc_map)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+    
+
 @api_view(['POST'])
 def create_file(request):
     try:
