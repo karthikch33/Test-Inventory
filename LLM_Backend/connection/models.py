@@ -34,7 +34,7 @@ class Connection(models.Model):
     project_id = models.ForeignKey(
         Project, 
         on_delete=models.CASCADE, 
-        related_name='connections'  # Helpful for reverse lookups
+        related_name='connections'
     )
     project_name = models.CharField(max_length=255, blank=True, null=True)
     connection_name = models.CharField(max_length=255, blank=True, null=True)
@@ -47,7 +47,7 @@ class Connection(models.Model):
     port = models.CharField(max_length=255, blank=True, null=True)
     database = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=255, blank=True, null=True)
-    imported_tables = models.JSONField(blank=True, null=True)  # Use JSONField for storing JSON data
+    imported_tables = models.JSONField(blank=True, null=True)  
     created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -65,70 +65,95 @@ class File(models.Model):
         related_name='files'
     )
     file_name = models.TextField()
-    file_type = models.TextField(default=None)
-    sheet_name = models.TextField(default=None , null=True)
     created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('project_id', 'file_name','sheet_name')
+        unique_together = ('project_id', 'file_name')
 
     def __str__(self):
         return self.file_name
     
+    
 
-class TableMeta(models.Model):  
-    table_id = models.AutoField(primary_key=True)
+class Senerios(models.Model):
+    senerio_id = models.AutoField(primary_key=True)
     project_id = models.ForeignKey(
         'Project',
         on_delete=models.CASCADE,
-        related_name='tables'
+        related_name='senerios'
     )
     file_id = models.ForeignKey(
         'File',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='tables'
+        on_delete=models.CASCADE,
+        related_name='senerios'
     )
-    file_name = models.TextField()
-    connection_id = models.ForeignKey(
-        'Connection',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='tables'
-    )
-    table_name = models.TextField()
-    primary_keys = models.TextField(null=True, blank=True)
-    preload = models.BooleanField(default=False)
-    postload = models.BooleanField(default=False)
-    source = models.BooleanField(default=False)
+    senerio_name = models.TextField()
+    senerio_description = models.TextField(blank=True, null=True)
+    senerio_table_name = models.TextField(blank=True, null=True)
     created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('project_id', 'table_name')
+        unique_together = ('project_id', 'file_id', 'senerio_name')
 
     def __str__(self):
-        return self.table_name    
+        return self.senerio_name    
 
 
-class Chat(models.Model):
-    chat_id = models.AutoField(primary_key=True)
-    project_id = models.ForeignKey(
-        'Project',
-        on_delete=models.CASCADE,
-        related_name='chats'
-    )
-    table_id = models.ForeignKey(
-        'TableMeta',
-        on_delete=models.CASCADE,
-        related_name='chats'
-    )
-    chat_text = models.TextField()
-    datetime = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Chat {self.chat_id} for Project {self.project_id_id}"
+
+# class TableMeta(models.Model):  
+#     table_id = models.AutoField(primary_key=True)
+#     project_id = models.ForeignKey(
+#         'Project',
+#         on_delete=models.CASCADE,
+#         related_name='tables'
+#     )
+#     file_id = models.ForeignKey(
+#         'File',
+#         null=True,
+#         blank=True,
+#         on_delete=models.SET_NULL,
+#         related_name='tables'
+#     )
+#     file_name = models.TextField()
+#     connection_id = models.ForeignKey(
+#         'Connection',
+#         null=True,
+#         blank=True,
+#         on_delete=models.SET_NULL,
+#         related_name='tables'
+#     )
+#     table_name = models.TextField()
+#     primary_keys = models.TextField(null=True, blank=True)
+#     preload = models.BooleanField(default=False)
+#     postload = models.BooleanField(default=False)
+#     source = models.BooleanField(default=False)
+#     created_time = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         unique_together = ('project_id', 'table_name')
+
+#     def __str__(self):
+#         return self.table_name    
+
+
+# class Chat(models.Model):
+#     chat_id = models.AutoField(primary_key=True)
+#     project_id = models.ForeignKey(
+#         'Project',
+#         on_delete=models.CASCADE,
+#         related_name='chats'
+#     )
+#     table_id = models.ForeignKey(
+#         'TableMeta',
+#         on_delete=models.CASCADE,
+#         related_name='chats'
+#     )
+#     chat_text = models.TextField()
+#     datetime = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"Chat {self.chat_id} for Project {self.project_id_id}"
 
 
 

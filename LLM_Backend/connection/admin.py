@@ -6,8 +6,7 @@ from connection.models import *
 admin.site.register(Project)
 admin.site.register(Connection)
 admin.site.register(File)
-admin.site.register(TableMeta)
-admin.site.register(Chat)
+admin.site.register(Senerios)
 
 
 # admin.site.register(Project)

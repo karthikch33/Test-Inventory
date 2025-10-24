@@ -36,21 +36,14 @@ def home(request):
 
 def deleteSqlLiteTable(table_name):
  
-    # table_name = "demo"
- 
     try:
-            with connection.cursor() as cursor:
-                # Use parameterized query to prevent SQL injection
-                cursor.execute(f"DROP TABLE IF EXISTS  {table_name}") # Correct: parameterized query
-                # or cursor.execute(f"DROP TABLE IF EXISTS {table_name}") # Less secure way
-                print(f"Table '{table_name}' dropped (IF EXISTS).")
+        with connection.cursor() as cursor:
+            # Use parameterized query to prevent SQL injection
+            cursor.execute(f"DROP TABLE IF EXISTS  {table_name}") # Correct: parameterized query
+            # or cursor.execute(f"DROP TABLE IF EXISTS {table_name}") # Less secure way
+            print(f"Table '{table_name}' dropped (IF EXISTS).")
     except Exception as e:
             print(f"Error dropping table '{table_name}': {e}")
-   
- 
- 
-   
- 
     return Response("Hii")
 
 
@@ -150,7 +143,7 @@ def delete_project(request, pk):
         return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
 
     project_name = project.project_name
-    delete_tables_under_project(project.project_id)
+    # delete_tables_under_project(project.project_id)
     project.delete()
     
     return Response(
@@ -163,12 +156,8 @@ def delete_project(request, pk):
 
 
 def TableName_Modification(text):
-    
-    allowed_chars = string.ascii_letters + string.digits + ' '  # Add space if needed
- 
-    # Filter out characters not in the allowed set
+    allowed_chars = string.ascii_letters + string.digits + ' '
     cleaned_text = ''.join(char for char in text if char in allowed_chars)
-    
     return re.sub(r'\s+', '_', cleaned_text)
 
 #FILE
@@ -258,86 +247,86 @@ def copy_table_structure(table_name1, table_name2, fail_if_exists=True):
 
     print(f"Table '{table_name2}' created as a structure copy of '{table_name1}' (no data copied).")
 
+
+import pandas as pd
+
+
+
+
+# sheet_index=1
+# skiprows=15
+# skipcols=1
+# file=r"C:\Users\gajananda.mallidi\Downloads\NEWPUSH\NEWPUSH\LLM_Backend\connection\SAP_Inventory_Accelerators.xlsx"
+# df = pd.read_excel(file, sheet_name=sheet_index, skiprows=skiprows, usecols=lambda c: True)
+# df = df.iloc[:, skipcols:]
+
+# df.to_excel('output.xlsx', index=False)
+
+  
 @api_view(['POST'])
 def create_file(request):
     try:
-        print(request.data)
+        file=r"C:\Users\gajananda.mallidi\Test-Inventory\LLM_Backend\connection\SAP_Inventory_Accelerators.xlsx"
+        sheet_inds = [1,3,4]
+        sheet_desc = ["Goods Receipt for Non-Stock PO     ",
+            "Goods Receipt from Store Return STO (Z3PL)",
+            "Goods Receipt from Consumer into 3PL as Good Stock" ] 
+        project_id = request.data['project_id']
         file_data = {
             "project_id": request.data.get("project_id"),
             "file_name": request.data.get("file_name"),
-            "file_type": request.data.get("table_type"),
-            "sheet_name" : request.data.get("sheet_name"),
         }
 
         serializer = FileSerializer(data=file_data) 
         if serializer.is_valid():
-            # serializer.save()
-            # file_id = serializer.instance.file_id
-            file_name = file_data["file_name"]+request.data.get("sheet_name")
-            table_type = request.data.get("table_type")
-            table_name = TableName_Modification(file_name)
-            tab = f"t_{file_data['project_id']}_{table_name}"
-
-            preload = postload = source = False
-            if table_type == "preload":
-                preload = True
-            elif table_type == "postload":
-                postload = True
-            else:
-                source = True
-            try:
-                project_instance = Project.objects.get(pk=file_data["project_id"])
-            except Project.DoesNotExist:
-                return Response({"error": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
-            
-            primary_keys = request.data.getlist("primary_keys", [])
-            primary_keys = [str(pk).strip() for pk in primary_keys]
-            if(len(primary_keys) >= 1 and primary_keys[0] == ''):primary_keys.pop(0)
-            # Read Excel file path and sheet name from request data, create dataframe
-            file_path = request.FILES['file']
-            # file_path = r"C:\Users\gajananda.mallidi\MEDLINE\MEDLINE\LLM_Backend\connection\MAT_MASTER_BASIC_ENR_20250707_1150.xlsx"
-            sheet_name = request.data.get("sheet_name")
-
-            try:
-                df_created = pd.read_excel(file_path, sheet_name=sheet_name)
-            except Exception as e:
-                return Response({"error": f"Failed to read Excel file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                validate_dataframe(df_created)
-            except ValueError as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-            # create_table_and_insert_data_as_text(tab, df_created)
-            print("bef")
-            df_created.to_sql(tab, connection.connection, if_exists='replace', index=False)
-            print("aft")
-            # copy_table_structure(tab,tab+"_err")
-            # add_prompt_column(tab+"_err")
             serializer.save()
             file_id = serializer.instance.file_id
-            table_meta_obj = TableMeta.objects.create(
-                project_id=project_instance,
-                file_id=serializer.instance,
-                file_name = serializer.instance.file_name,
-                connection_id=None,
-                table_name=tab,
-                primary_keys= ",".join(primary_keys),
-                preload=preload,
-                postload=postload,
-                source=source
-            )
-            response_data = serializer.data.copy()
-            response_data['file_id'] = file_id
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            print("data not valid")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e: 
-        print(e)
-        print("HIIIIIIIIIIIIIIIIIIIIIIIIII")
-        return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
+            table_names = []
+            for i in sheet_desc:
+                i = i.strip()
+                i = TableName_Modification(i)
+                i = "t_"+str(project_id)+"_"+str(file_id)+"_"+i
+                
+                table_names.append(i)
+            for i in range(len(sheet_desc)):
+                skiprows=15
+                skipcols=1
+                df = pd.read_excel(file, sheet_name=sheet_inds[i], skiprows=skiprows, usecols=lambda c: True)
+                df = df.iloc[:, skipcols:]
+                Senerio_desc = df['Test Description'][0]
+                df = df.drop(columns=['Test Description'])
+                df.to_excel('output.xlsx', index=False)
+                
+                senerios_data = {
+                    "project_id" : request.data.get("project_id"),
+                    "file_id" : serializer.instance.file_id,
+                    "senerio_name" : sheet_desc[i],
+                    "senerio_description" : Senerio_desc,
+                    "senerio_table_name" : table_names[i]
+                }
+                print(senerios_data)
+                serializer1 = SeneriosSerializer(data=senerios_data)
+                if serializer1.is_valid():
+                    serializer1.save()
+                    df.to_sql(table_names[i], connection.connection, if_exists='replace', index=False)
+        return Response("Done")            
+    except Exception as e:
+        print(e)
+        return Response("error")
+    
+
+
+
+
+
+
+
+
+
+
+
+    
 
 @api_view(['GET'])
 def list_files(request):
@@ -373,18 +362,11 @@ def delete_file(request, pk):
     except File.DoesNotExist:
         return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    related_tablemeta_row = TableMeta.objects.filter(file_id=file.file_id).first()
-    table_name = related_tablemeta_row.table_name if related_tablemeta_row else None
-    deleteSqlLiteTable(table_name)
-    if related_tablemeta_row:
-        related_tablemeta_row.delete()
-
     file.delete()
 
     return Response(
         {
-            "deleted_file_id": pk,
-            "deleted_related_table_name": table_name
+            "deleted_file_id": pk
         },
         status=status.HTTP_204_NO_CONTENT
     )

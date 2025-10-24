@@ -17,15 +17,11 @@ class FileSerializer(serializers.ModelSerializer):
         model = File
         fields = '__all__'
 
-class TableMetaSerializer(serializers.ModelSerializer):
+class SeneriosSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TableMeta
+        model = Senerios
         fields = '__all__'
 
-class ChatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Chat
-        fields = '__all__'
 
 
 # class ProjectSerializer(serializers.ModelSerializer):
