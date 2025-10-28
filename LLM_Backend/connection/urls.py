@@ -18,6 +18,7 @@ urlpatterns = [
     path('api/files/extract_first_column/', views.extract_first_column, name='extract_first_column'),
     path('api/list_senerios_by_file/<int:file_id>/', views.list_senerios_by_file, name='list_senerios_by_file'),
     path('api/list_files_by_project/<int:project_id>/', views.list_files_by_project, name='list_files_by_project'),
+    path('api/get_table_by_senerio/<int:senerio_id>/', views.get_table_by_senerio, name='get_table_by_senerio'),
 
 
     path('api/projects/<int:project_id>/files/', views.files_by_project, name='files_by_project'),
