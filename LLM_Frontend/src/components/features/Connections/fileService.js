@@ -29,7 +29,11 @@ const renameFileService = async (data)=>{
 
 const uploadExcelSheetService = async (formData)=>{
     try {
-        const response = await axios.post("http://127.0.0.1:8000/xlsx/", formData);
+        const response = await axios.post("http://127.0.0.1:8000/api/files/create/", formData,{
+            headers :{
+                'Content-Type' : 'multipart/form-data'
+            }
+        });
         return response;
     } catch (error) {
         return error;
@@ -64,7 +68,7 @@ const uploadTxtSheetService = async (formData)=>{
 
 const uploadExcelService = async(formData)=>{
     try {
-        const response = await axios.post('http://127.0.0.1:8000/excel/',formData,{
+        const response = await axios.post('http://127.0.0.1:8000/api/read_excel_and_return_json/',formData,{
             headers:{
                 'Content-Type' :'multipart/form-data'
             }

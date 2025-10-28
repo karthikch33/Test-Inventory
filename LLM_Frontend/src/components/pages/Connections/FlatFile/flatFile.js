@@ -31,7 +31,6 @@ const FlatFile = () => {
     useEffect(() => {
         dispatch(getFileSlice())
         .then((response)=>{
-            console.log(response);
             if(response?.payload?.status === 200)  loadFiles(response);
             else message?.error('Failed To Load Files')
         })

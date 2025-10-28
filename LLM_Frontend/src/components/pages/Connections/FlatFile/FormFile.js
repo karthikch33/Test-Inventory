@@ -29,7 +29,6 @@ const FormFile = ({handleOk,loadFile}) => {
         project_id: yup.string().required('Project Selection Required'),     
         file_type: yup.string().required('File Type Selection Required'),  
         form_type : yup.string().required('Form Type Selection Required'),
-        file_status : yup.string().required('Please Select an Option')
     });  
  
     const formik = useFormik({  
@@ -44,12 +43,7 @@ const FormFile = ({handleOk,loadFile}) => {
             },
             validationSchema : schema,
             onSubmit : (values)=>{
-                if(fileType === 'Excel'){
-                    if(formik?.values?.selected_sheet) handleFormUploadExcel()
-                    else message?.error('Sheet not Selected')
-                }
-                else if(fileType === 'CSV') handleFormUploadCSV()
-                else messageApi?.error('Undefined File Type')
+                handleFormUploadExcel()
             }
     });
     
@@ -67,10 +61,7 @@ const FormFile = ({handleOk,loadFile}) => {
         const formData = new FormData();
         formData?.append('project_id', formik?.values?.project_id);
         formData?.append('file_name', formik?.values?.uploaded_fileName);
-        formData?.append('sheet_name', formik?.values?.selected_sheet);
-        formData?.append('primary_keys',[]);
         formData?.append('file', file);
-        formData?.append('table_type',formik?.values?.file_status)
         formData?.append('primary_keys',trimedData);
         
         dispatch(uploadExcelSheetSlice(formData))
@@ -151,8 +142,9 @@ const FormFile = ({handleOk,loadFile}) => {
                 dispatch(uploadExcelSlice(formData))
                 .then((response)=>{
                     // here error must be handle
+                    console.log(response)
                     setSheets(response?.payload?.data);
-                    const sheets = response?.payload?.response?.data[0];
+                    const sheets = response?.payload?.data;
                     formik.setFieldValue('selected_sheet',sheets);
                 })
                 .finally(()=>{
@@ -232,6 +224,7 @@ const FormFile = ({handleOk,loadFile}) => {
     }
 
     const handleSelectCheckbox = (e)=>{
+        console.log(e)
         setSelectedPrimaryKeys(e);
     }
  
@@ -274,20 +267,11 @@ const FormFile = ({handleOk,loadFile}) => {
         </div>  
         </div>  
 
-        {/* {fileType === 'Excel' &&
-        ( <CustomSelectSheet value={formik?.values?.selected_sheet} handleChange={handleSelectedSheet} sheets={sheets}
-        touched={formik?.touched?.selected_sheet} error={formik?.errors?.selected_sheet}/>
-        )}   */}
-
-
         <CustomSelectCheckbox primaryKeys={sheets} handleChange={handleSelectCheckbox}/>
     
         <div className="d-flex justify-content-end" style={{ marginTop: "10px" }}>  
         {file && <Button type="primary" htmlType='submit'>Upload</Button>}  
         </div>  
-
-
-
 
     </form>}
        {formik?.values?.form_type === 'Connection' && alert('Connection Form File')}

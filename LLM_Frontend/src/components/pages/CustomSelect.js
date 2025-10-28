@@ -188,10 +188,9 @@ export const CustomSelectCheckbox = (props)=>{
                 allowClear
                 onChange={handleChange}
                 >
-                    {primaryKeys?.map((primaryKey,index) =>
-                        <option key={index} value={primaryKey}>{primaryKey}</option>
+                    {Object.entries(primaryKeys)?.map(([key,value]) =>
+                        <option key={key} value={key + "&&_" + value}>{value}</option>
                     )}
-                    
                 </Select>
             </div>
         </div>

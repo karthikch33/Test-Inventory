@@ -289,11 +289,15 @@ def read_excel_and_return_json(request):
 @api_view(['POST'])
 def create_file(request):
     try:
-        file=r"C:\Users\gajananda.mallidi\Test-Inventory\LLM_Backend\connection\SAP_Inventory_Accelerators.xlsx"
-        sheet_inds = [1,3,4]
-        sheet_desc = ["Goods Receipt for Non-Stock PO     ",
-            "Goods Receipt from Store Return STO (Z3PL)",
-            "Goods Receipt from Consumer into 3PL as Good Stock" ] 
+        file=request.FILES.get('file')
+        ind_desc = request.data.getlist("primary_keys", [])
+        sheet_inds=[]
+        sheet_desc=[]
+        for j in ind_desc:
+            ttmp=j.split("&&_")
+            sheet_desc.append(ttmp[1])
+            sheet_inds.append(int(ttmp[0]))
+        print("fffffffffffffffffffffffffffffff",sheet_desc,sheet_inds)
         project_id = request.data['project_id']
         file_data = {
             "project_id": request.data.get("project_id"),
