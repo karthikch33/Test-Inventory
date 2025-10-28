@@ -153,7 +153,6 @@ const FlatFile = () => {
 
     const handleRadioChange = (record) => {  
         setSelectedKey(record?.file_id);
-        console.log(record);
         setSelectedRecord(record);
     }; 
 

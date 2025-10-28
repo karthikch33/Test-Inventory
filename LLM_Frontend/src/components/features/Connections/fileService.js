@@ -11,7 +11,7 @@ const getFileService = async ()=>{
 
 const deleteFileService = async (data)=>{
     try {
-        const response = await axios.delete(`http://127.0.0.1:8000/api/files/${data?.project_id}/delete/`);
+        const response = await axios.delete(`http://127.0.0.1:8000/api/files/${data?.file_id}/delete/`);
         return response;
     } catch (error) {
         return error;
