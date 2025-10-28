@@ -386,6 +386,13 @@ def get_file(request, pk):
     serializer = FileSerializer(file)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def get_table_by_senerio(request, senerio_id):
+    senerio = Senerios.objects.get(pk=senerio_id)
+    table_name = senerio.senerio_table_name
+    return table_to_custom_json(table_name)
+
+
 @api_view(['PUT'])
 def update_file(request, pk):
     try:
