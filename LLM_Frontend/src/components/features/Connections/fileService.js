@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const getFileService = async ()=>{
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/fget/');
+        const response = await axios.get('http://127.0.0.1:8000/api/files/');
         return response;
     } catch (error) {
         return error;
@@ -11,7 +11,7 @@ const getFileService = async ()=>{
 
 const deleteFileService = async (data)=>{
     try {
-        const response = await axios.delete(`http://127.0.0.1:8000/api/fdelete/${data?.project_id}/${data?.file_name}/`);
+        const response = await axios.delete(`http://127.0.0.1:8000/api/files/${data?.project_id}/delete/`);
         return response;
     } catch (error) {
         return error;

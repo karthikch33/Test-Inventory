@@ -92,16 +92,6 @@ const FlatFile = () => {
             title: 'File Name',  
             dataIndex: 'file_name',  
             key: 'file_name',  
-        },  
-        {  
-            title: 'File Type',  
-            dataIndex: 'file_type',  
-            key: 'file_type',  
-        },  
-        {  
-            title: 'Sheet',  
-            dataIndex: 'sheet_name',  
-            key: 'sheet_name',  
         }
     ];
 
