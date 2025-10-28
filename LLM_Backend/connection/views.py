@@ -143,7 +143,7 @@ def delete_project(request, pk):
         return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
 
     project_name = project.project_name
-    # delete_tables_under_project(project.project_id)
+    delete_tables_under_project(project.project_id)
     project.delete()
     
     return Response(
@@ -291,10 +291,13 @@ def create_file(request):
     try:
         file=request.FILES.get('file')
         ind_desc = request.data.getlist("primary_keys", [])
+        ind_desc = ind_desc[0].split(",")
+        print(ind_desc)
         sheet_inds=[]
         sheet_desc=[]
         for j in ind_desc:
             ttmp=j.split("&&_")
+            print(ttmp)
             sheet_desc.append(ttmp[1])
             sheet_inds.append(int(ttmp[0]))
         print("fffffffffffffffffffffffffffffff",sheet_desc,sheet_inds)
@@ -355,6 +358,19 @@ def create_file(request):
 
     
 
+
+@api_view(['GET'])
+def list_senerios_by_file(request, file_id):
+    senerios = Senerios.objects.filter(file_id=file_id)
+    serializer = SeneriosSerializer(senerios, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def list_files_by_project(request, project_id):
+    files = File.objects.filter(project_id=project_id)
+    serializer = FileSerializer(files, many=True)
+    return Response(serializer.data)
+
 @api_view(['GET'])
 def list_files(request):
     files = File.objects.all()
@@ -388,14 +404,14 @@ def delete_file(request, pk):
         file = File.objects.get(pk=pk)
     except File.DoesNotExist:
         return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
-
+    delete_tables_under_project(file.project_id)
     file.delete()
 
     return Response(
         {
             "deleted_file_id": pk
         },
-        status=status.HTTP_204_NO_CONTENT
+        status=status.HTTP_201_CREATED
     )
 
 from rest_framework.decorators import parser_classes
