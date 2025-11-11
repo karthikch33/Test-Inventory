@@ -1,14 +1,13 @@
 import { useFormik } from 'formik';
 import React, { useEffect, useState  } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { getBussinessRulesSlice, getDataSegmentsSlice, getFieldsOnSegmentSlice, getTableSlice, getVersionNumberSlice } from '../../features/BussinessRules/BussinessRulesSlice';
 import {  Checkbox, Form, Input, Select, Splitter, Table, Tooltip } from 'antd';
 import { Option } from 'antd/es/mentions';
 import { FaDownload } from "react-icons/fa6";
 import * as XLSX from 'xlsx';
 import { EditableArea, EditableField, EditableSelectMappingType} from '../Bussiness Rules/EditableCell';
 import { message } from 'antd';
-import { getLatestVersionSlice } from '../../features/WorkSpace/workSpaceSlice';
+import { getAllFilesByProjectIdSlice, getAllScenarioByFileIdSlice, getLatestVersionSlice, getScenarioTableSlice } from '../../features/WorkSpace/workSpaceSlice';
 import Chat from './Chat';
 import Meta from '../../utils/Meta'
 
@@ -134,11 +133,10 @@ const WorkSpace = () => {
         const data = {
           project_id : value,
       }
-        // dispatch(getBussinessRulesSlice(data))  // we are project id only but it is named has obj_id
-        // .then((response) => {  
-        //   const filteredFiles = response?.payload?.data?.filter((item)=> item?.project_id === value);
-        //   formik.setFieldValue('files', filteredFiles);
-        // })
+        dispatch(getAllFilesByProjectIdSlice(data))
+        .then((response) => {  
+          formik.setFieldValue('files', response?.payload?.data);
+        })
     };
  
     const handleFileChange = (value) =>{
@@ -153,27 +151,33 @@ const WorkSpace = () => {
             file_id : value
         }
 
-        // dispatch(getDataSegmentsSlice(data))
-        // .then((response)=>{
-        //     formik.setFieldValue('scenarios', response?.payload?.data);  
-        // })
+        dispatch(getAllScenarioByFileIdSlice(data))
+        .then((response)=>{
+            console.log(response)
+            formik.setFieldValue('scenarios', response?.payload?.data);  
+        })
+
     };
 
     const handleScenarioChange  = (value)=>{
-        formik.setFieldValue('selected_scenario', value);
-        formik.setFieldValue('scenario_description',value);
+        const scenario_obj = JSON.parse(value);
 
-        const data = {project_id:formik.values.selected_project,file_id:formik.values.selected_file,scenario_id:value};
+        formik.setFieldValue('selected_scenario', scenario_obj?.senerio_id);
+        formik.setFieldValue('scenario_description',scenario_obj?.senerio_name);
 
-        // dispatch(getFieldsOnSegmentSlice())
-        // .then((response)=>{
-        // if(response?.payload?.status === 200)
-        //     {
-        //     setFields(response?.payload?.data);
-        // }})
-        // .finally(()=>{
-        //     setRules(null);
-        // })
+        const data = {project_id:formik.values.selected_project,file_id:formik.values.selected_file,senario_id:scenario_obj?.senerio_id};
+
+        dispatch(getScenarioTableSlice(data))
+        .then((response)=>{
+        if(response?.payload?.status === 200)
+        {
+            console.log(response);
+            setTableData(response?.payload?.data?.rows)
+            setFields(response?.payload?.data?.columns);
+        }})
+        .finally(()=>{
+            setRules(null);
+        })
     }
 
     const handleSearch = (e)=>{
@@ -235,8 +239,8 @@ const WorkSpace = () => {
         dropdownStyle={{ overflowY: 'auto' }}  
         >  
         {formik.values.files && formik.values.files?.map((object) => (  
-            <Option key={object?.obj_id} value={object?.obj_id}>  
-            {object?.obj_name}  
+            <Option key={object?.file_id} value={object?.file_id}>  
+            {object?.file_name}  
             </Option>  
         ))}  
         </Select>  
@@ -246,12 +250,12 @@ const WorkSpace = () => {
         <Select
         style={{width:160}}
         onChange={handleScenarioChange}  
-        value={formik.values.selected_scenario || undefined}  
+        value={formik.values.scenario_description || undefined}  
         dropdownStyle={{ overflowY: 'auto' }}  
         >  
         {formik.values.scenarios && formik.values.scenarios?.map((segment) => (  
-            <Option key={segment?.segment_id} value={segment?.segment_id}>  
-            {segment?.segement_name}  
+            <Option key={segment?.senerio_id} value={JSON.stringify(segment)}>  
+            {segment?.senerio_name}  
             </Option>  
         ))}  
         </Select>  
@@ -306,9 +310,9 @@ const WorkSpace = () => {
                 >  
                 {fields?.map((i) => (  
                     <Table.Column  
-                    title={i['fields']}  
-                    dataIndex={i['fields']}  
-                    key={i['fields']}  
+                    title={i['value']}  
+                    dataIndex={i['value']}  
+                    key={i['value']}  
                     />  
                 ))}  
                 </Table>  

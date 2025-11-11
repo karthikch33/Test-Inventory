@@ -7,9 +7,6 @@ import ManageProjects from './components/pages/Project/ManageProjects';
 import { useEffect } from 'react'; 
 import { useDispatch } from 'react-redux';
 import { getProjectsSlice } from './components/features/Project/projectSlice';
-import CreateBussinessRules from './components/pages/Bussiness Rules/createBussinessRules';
-import ManageBussinessRules from './components/pages/Bussiness Rules/manageBussinessRules';
-import ViewBussinessRule from './components/pages/Bussiness Rules/ViewBussinessRule';
 import PageNotFound from './components/pages/PageNotFound';
 import WorkSpaceLayout from './components/pages/WorkSpace/WorkSpaceLayout';
 
@@ -48,7 +45,7 @@ function App() {
 
 
             {/* Business Rules Routes}*/}
-            <Route path='/bussinessrules' element={<MainScreen/>}>
+            {/* <Route path='/bussinessrules' element={<MainScreen/>}>
                   <Route path='create' element={<CreateBussinessRules/>}/>
                   <Route path='create/:project_id' element={<CreateBussinessRules/>}/>
                   <Route path='reupload' element={<CreateBussinessRules/>}/>
@@ -56,7 +53,7 @@ function App() {
                   <Route path='manage' element={<ManageBussinessRules/>}/>
                   <Route path='views' element={<ViewBussinessRule/>}/>
                   <Route path='views/:project_id/:object_id' element={<ViewBussinessRule/>}/>
-            </Route>
+            </Route> */}
 
 
           </Routes>

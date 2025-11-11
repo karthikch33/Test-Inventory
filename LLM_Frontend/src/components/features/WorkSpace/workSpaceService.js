@@ -152,10 +152,28 @@ const getPostLoadPivotService = async(data)=>{
 // api/projects/<int:project_id>/files/
 const getAllFilesByProjectIdService = async(data)=>{
     try {
-        const response = await axios.get(`${urls?.url}api/get_tables_by_project/${data?.project_id}/`);
+        const response = await axios.get(`${urls?.url}api/list_files_by_project/${data?.project_id}/`);
         return response;
     } catch (error) {
         console.log(error)
+    }
+}
+
+const getAllScenarioByFileIdService = async (data)=>{
+    try {
+        const response = await axios.get(`${urls?.url}api/list_senerios_by_file/${data?.file_id}/`)
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getScenarioTableService = async (data)=>{
+    try {
+        const response = await axios.get(`${urls?.url}api/get_table_by_senerio/${data?.senario_id}/`)
+        return response;
+    } catch (error) {
+        console.log(error);
     }
 }
 
@@ -176,7 +194,9 @@ const workSpaceServices = {
     getFileErrorTableService,
     getPostLoadReportService,
     getPostLoadPivotService,
-    getAllFilesByProjectIdService
+    getAllFilesByProjectIdService,
+    getAllScenarioByFileIdService,
+    getScenarioTableService
 }
 
 export default workSpaceServices;

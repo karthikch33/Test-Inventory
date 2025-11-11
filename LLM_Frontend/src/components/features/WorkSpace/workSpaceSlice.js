@@ -150,6 +150,22 @@ export const getAllFilesByProjectIdSlice = createAsyncThunk('workspace/getallfil
     }
 })
 
+export const getAllScenarioByFileIdSlice = createAsyncThunk('workspace/getallscenariobyfile',async(data,thunkAPI)=>{
+    try {
+        return await workSpaceServices.getAllScenarioByFileIdService(data);
+    } catch (error) {
+        thunkAPI?.rejectWithValue(error);
+    }
+})
+
+export const getScenarioTableSlice = createAsyncThunk('workspace/getscenariotable',async(data,thunkAPI)=>{
+    try {
+        return await workSpaceServices.getScenarioTableService(data);
+    } catch (error) {
+        thunkAPI?.rejectWithValue(error);
+    }
+})
+
 const workSpaceSlice = createSlice({
     name : "workSpace",
     initialState : initialState,
@@ -428,6 +444,38 @@ const workSpaceSlice = createSlice({
             state.isSuccess = true;
         })
         .addCase(getAllFilesByProjectIdSlice?.rejected,(state,action)=>{
+            state.isError = true;
+            state.isPending = false;
+            state.isSuccess = false;
+        })
+        
+        builder.addCase(getAllScenarioByFileIdSlice?.pending,(state,action)=>{
+            state.isError = false;
+            state.isPending = true;
+            state.isSuccess = false;
+        })
+        .addCase(getAllScenarioByFileIdSlice?.fulfilled,(state,action)=>{
+            state.isError = false;
+            state.isPending = false;
+            state.isSuccess = true;
+        })
+        .addCase(getAllScenarioByFileIdSlice?.rejected,(state,action)=>{
+            state.isError = true;
+            state.isPending = false;
+            state.isSuccess = false;
+        })
+        
+        builder.addCase(getScenarioTableSlice?.pending,(state,action)=>{
+            state.isError = false;
+            state.isPending = true;
+            state.isSuccess = false;
+        })
+        .addCase(getScenarioTableSlice?.fulfilled,(state,action)=>{
+            state.isError = false;
+            state.isPending = false;
+            state.isSuccess = true;
+        })
+        .addCase(getScenarioTableSlice?.rejected,(state,action)=>{
             state.isError = true;
             state.isPending = false;
             state.isSuccess = false;
