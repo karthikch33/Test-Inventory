@@ -8,9 +8,9 @@ import Meta from '../utils/Meta';
 const LandingPage = () => {  
   return (  
     <> 
-    <Meta title="HOME | GEN AI"/>
+    <Meta title="HOME | Test Inventory"/>
     <Row className='LandingPage p-2 m-2'>  
-    <Col xs={12} md={7}>  
+    <Col xs={12} md={7}> 
       <Row>  
         {cardsData.map((card, index) => (  
           <Col xs={12} sm={6} key={index}>  
