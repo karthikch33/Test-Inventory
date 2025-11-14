@@ -5,7 +5,7 @@ import { EditableChat } from '../Bussiness Rules/EditableCell';
 import { message } from 'antd';
 
 const Chat = (props) => {
-const {file_id,setFields,setTableData,setLoading} = props;
+const {file_id,setResponseTableDataRows,setResponseTableDataColumns} = props;
 const [messagess, setMessages] = useState([]);
 const dispatch = useDispatch();
 
@@ -41,8 +41,8 @@ const getFormattedTime = () => {
     const cols = response?.payload?.data?.columns || [];
     const selected = response?.payload?.data?.["selected rows"] || [];
 
-    setFields(cols);
-    setTableData(rows);
+    setResponseTableDataColumns(cols);
+    setResponseTableDataRows(rows);
 
     setMessages(prev => [
       ...prev,

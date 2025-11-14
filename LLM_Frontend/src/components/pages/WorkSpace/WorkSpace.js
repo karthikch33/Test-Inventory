@@ -23,6 +23,8 @@ const WorkSpace = () => {
     const [fields,setFields] = useState([]);
     const [alertActive,setAlertActive] = useState(true);
     const [messageApi,contextHolder] = message?.useMessage();
+    const [responseTableDataRows,setResponseTableDataRows] = useState([]);
+    const [responseTableDataColumns,setResponseTableDataColumns] = useState([]);
 
     const dispatch = useDispatch();
 
@@ -286,11 +288,11 @@ const WorkSpace = () => {
         lazy
         style={{ height: "100%", width:"100%",boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
         <Splitter.Panel collapsible defaultSize="30%" min="10%" max="70%">  
-          <Chat file_id = {formik.values.selected_file} setFields={setFields}
-          setTableData={setTableData} load={setLoading}/>
+          <Chat file_id={formik.values.selected_file}
+          setResponseTableDataRows={setResponseTableDataRows} setResponseTableDataColumns={setResponseTableDataColumns} load={setLoading}/>
         </Splitter.Panel>    
 
-      <div className="col-12 col-md-9 d-flex flex-column h-100">  
+<div className="col-12 col-md-9 d-flex flex-column h-100">  
         <Splitter  
             layout="vertical"  
             lazy
@@ -300,9 +302,10 @@ const WorkSpace = () => {
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',  
             }}  
         >  
-            <Splitter.Panel style={{flex: 1}} collapsible>
-            <div className="table-container2 flex-grow-1 rounded scrollbar">  
-                <Table  
+            <Splitter.Panel style={{flex: 1}} collapsible defaultSize="40%" min="10%" max="70%"> 
+
+            <div className="table-container mb-3 flex-grow-1 scrollbar">  
+            <Table  
                 dataSource={tabledata || []}  
                 className="WorkSpaceTargetTable"
                 pagination={{ pageSize: 13, showQuickJumper: true, showSizeChanger: false}}  
@@ -315,7 +318,26 @@ const WorkSpace = () => {
                     key={i['value']}  
                     />  
                 ))}  
-                </Table>  
+                </Table> 
+            </div>  
+            </Splitter.Panel>  
+
+            <Splitter.Panel style={{flex: 1}} collapsible>
+            <div className="table-container2 flex-grow-1 rounded scrollbar">  
+            <Table  
+                dataSource={responseTableDataRows || []}  
+                className="WorkSpaceTargetTable"
+                pagination={{ pageSize: 13, showQuickJumper: true, showSizeChanger: false}}  
+                loading={loading}
+                >  
+                {responseTableDataColumns?.map((i) => (  
+                    <Table.Column  
+                    title={i['value']}  
+                    dataIndex={i['value']}  
+                    key={i['value']}  
+                    />  
+                ))}  
+                </Table> 
             </div>  
             </Splitter.Panel>  
         </Splitter>  
