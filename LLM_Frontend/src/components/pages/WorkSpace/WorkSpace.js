@@ -286,7 +286,7 @@ const WorkSpace = () => {
         lazy
         style={{ height: "100%", width:"100%",boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
         <Splitter.Panel collapsible defaultSize="30%" min="10%" max="70%">  
-          <Chat project_id={formik.values.selected_project} object_id={formik.values.selected_file} segment_id={formik.values.selected_scenario}
+          <Chat file_id = {formik.values.selected_file} setFields={setFields}
           setTableData={setTableData} load={setLoading}/>
         </Splitter.Panel>    
 

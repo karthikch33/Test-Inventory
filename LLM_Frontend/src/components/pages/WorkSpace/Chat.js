@@ -5,7 +5,7 @@ import { EditableChat } from '../Bussiness Rules/EditableCell';
 import { message } from 'antd';
 
 const Chat = (props) => {
-const {file_id,setTableDataWithIndex,setFields,previousPrompt} = props;
+const {file_id,setFields,setTableData,setLoading} = props;
 const [messagess, setMessages] = useState([]);
 const dispatch = useDispatch();
 
@@ -33,7 +33,6 @@ const getFormattedTime = () => {
             prompt : messages
         }
       }
-      previousPrompt(messages)
 
       dispatch(getExecuteQueriesSlice(data))
     .then((response)=>{
@@ -43,7 +42,7 @@ const getFormattedTime = () => {
     const selected = response?.payload?.data?.["selected rows"] || [];
 
     setFields(cols);
-    setTableDataWithIndex(rows);
+    setTableData(rows);
 
     setMessages(prev => [
       ...prev,

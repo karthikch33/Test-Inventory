@@ -22,7 +22,10 @@ class SeneriosSerializer(serializers.ModelSerializer):
         model = Senerios
         fields = '__all__'
 
-
+class glossarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = glossary
+        fields = '__all__'
 
 # class ProjectSerializer(serializers.ModelSerializer):
 #     class Meta:
