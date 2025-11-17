@@ -99,7 +99,10 @@ class Senerios(models.Model):
         return self.senerio_name    
 
 
-
+class glossary(models.Model):
+    column_desc=models.TextField(unique=True)
+    column_name=models.TextField(blank=False)
+    
 
 # class TableMeta(models.Model):  
 #     table_id = models.AutoField(primary_key=True)

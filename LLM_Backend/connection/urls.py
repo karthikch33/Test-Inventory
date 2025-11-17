@@ -22,18 +22,8 @@ urlpatterns = [
 
 
     path('api/projects/<int:project_id>/files/', views.files_by_project, name='files_by_project'),
-    path('api/files/<int:file_id>/tables/', views.get_table_names_by_file, name='get_table_names_by_file'),
-    path('api/files/<int:file_id>/prompt_tables/', views.process_select_query, name='process_select_query'),
-    path('api/files/<int:file_id>/create_error_records/', views.create_error_records, name='create_error_records'),
-    path('api/files/<int:file_id>/get_error_table/', views.get_error_table, name='get_error_table'),
-
-    path('api/Get_Post_Load_Report/<int:pre_id>/<int:post_id>/', views.Get_Post_Load_Report, name='Get_Post_Load_Report'),
-    path('api/Get_Post_Load_Pivot/<int:pre_id>/<int:post_id>/', views.Get_Post_Load_Pivot, name='Get_Post_Load_Pivot'),
-    path('api/get_tables_by_project/<int:pid>/', views.get_tables_by_project, name='get_tables_by_project'),
-    
-    
-    
     path('api/read_excel_and_return_json/', views.read_excel_and_return_json, name='read_excel_and_return_json'),
+    path('api/files/<int:file_id>/prompt_tables/', views.process_select_query, name='process_select_query'),
 
 
 
@@ -91,7 +81,9 @@ urlpatterns = [
 
     # path('xls/',views.xls_read,name="xls_read"),
 #     path('api/ObjGet/<int:oid>/',views.objects_get,name="objects_get"),
-#     path('api/ObjCreate/',views.objects_create,name="objects_create"),
+    path('api/GloCreate/',views.create_glossary,name="objects_create"),
+    path('api/GloDelete/',views.delete_glossary,name="delete_glossary"),
+    path('api/get_table_from_sap/',views.get_table_from_sap,name="get_table_from_sap"),
 #     path('api/ObjUpdate/<int:oid>/',views.objects_update,name="objects_update"),
 #     path('api/ObjDelete/<int:oid>/',views.objects_delete,name="objects_delete"),
  

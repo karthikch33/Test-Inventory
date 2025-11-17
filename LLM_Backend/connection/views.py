@@ -464,15 +464,7 @@ def files_by_project(request, project_id):
     serializer = FileSerializer(files, many=True)
     return Response(serializer.data)
 
-def insert_dicts_with_prompt_and_deduplicate(dict_list, table_name, prompt_value):
-    # Load data + prompt into DataFrame
-    df = pd.DataFrame(dict_list)
-    df['prompt'] = prompt_value  # Add prompt column
 
-    # Insert rows into SQL table
-    # You can use if_exists='append' to not overwrite if table exists
-    df.to_sql(table_name, connection.connection, if_exists='append', index=False)
-    print(f"Inserted and deduplicated rows in table {table_name}")
 
 
 # def dataframe_to_custom_json(df):
@@ -586,20 +578,570 @@ def copy_table(original_table, new_table):
     connection.commit()
     print(f"Table '{new_table}' created with all data from '{original_table}'.")
 
-@api_view(['GET'])
-def get_table_names_by_file(request, file_id):
+def sheet_get(df):
+    print("came to sheet_get")
     try:
-        file_id = int(file_id)
-    except ValueError:
-        return Response({"error": "file_id must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+        field_data = []
+        for ind, i in df.iterrows():
+            if i['Sheet Name'] == "":
+                if i['SAP Field'] != "":
+                    data = []
+                    data.append(i['SAP Field'])           
+                    data.append(i['Field Description'])   
+                    field_data.append(data)
+                    
 
-    table_rows = TableMeta.objects.filter(file_id=file_id)
-    table_names = list(table_rows.values_list('table_name', flat=True))
-    table_name = table_names[0]
-    copy_table(table_name,table_name+"_copy")
-    return table_to_custom_json(table_name+"_copy")
+        for d in field_data:
+            data_to_insert = {
+                'column_desc': d[1],
+                'column_name': d[0]
+            }
+            serializer = glossarySerializer(data=data_to_insert)
+            if serializer.is_valid():
+                serializer.save()   # Insert record
+                print('Record inserted:', serializer.data)
+            else:
+                print('Error:', data_to_insert)
+
+        return "Success"
+    except Exception as e:
+        print(f"Error in object creation: {e}")
+        return "Error"
 
 
+
+@api_view(['POST'])
+def create_glossary(request):
+    file = r"F:\MADHU SIR DMC's\Material Master new data.xlsx"
+    df = pd.read_excel(file, sheet_name="Field List", skiprows=[0, 1, 2], na_filter=False)
+    status_creation = sheet_get(df)
+
+    if status_creation == "Error":
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def delete_glossary(request):
+    glossary.objects.all().delete()
+    return Response("success")
+
+def func(table_name):
+  table_name = table_name.upper()
+  class RFC_ERROR_INFO(Structure):
+      _fields_ = [("code", c_long),
+                  ("group", c_long),
+                  ("key", c_wchar * 128),
+                  ("message", c_wchar * 512),
+                  ("abapMsgClass", c_wchar * 21),
+                  ("abapMsgType", c_wchar * 2),
+                  ("abapMsgNumber", c_wchar * 4),
+                  ("abapMsgV1", c_wchar * 51),
+                  ("abapMsgV2", c_wchar * 51),
+                  ("abapMsgV3", c_wchar * 51),
+                  ("abapMsgV4", c_wchar * 51)]
+
+  class RFC_CONNECTION_PARAMETER(Structure):
+      _fields_ = [("name", c_wchar_p),
+                  ("value", c_wchar_p)]
+
+
+  #-Constants-------------------------------------------------------------
+
+  #-RFC_RC - RFC return codes---------------------------------------------
+  RFC_OK = 0
+  RFC_COMMUNICATION_FAILURE = 1
+  RFC_LOGON_FAILURE = 2
+  RFC_ABAP_RUNTIME_FAILURE = 3
+  RFC_ABAP_MESSAGE = 4
+  RFC_ABAP_EXCEPTION = 5
+  RFC_CLOSED = 6
+  RFC_CANCELED = 7
+  RFC_TIMEOUT = 8
+  RFC_MEMORY_INSUFFICIENT = 9
+  RFC_VERSION_MISMATCH = 10
+  RFC_INVALID_PROTOCOL = 11
+  RFC_SERIALIZATION_FAILURE = 12
+  RFC_INVALID_HANDLE = 13
+  RFC_RETRY = 14
+  RFC_EXTERNAL_FAILURE = 15
+  RFC_EXECUTED = 16
+  RFC_NOT_FOUND = 17
+  RFC_NOT_SUPPORTED = 18
+  RFC_ILLEGAL_STATE = 19
+  RFC_INVALID_PARAMETER = 20
+  RFC_CODEPAGE_CONVERSION_FAILURE = 21
+  RFC_CONVERSION_FAILURE = 22
+  RFC_BUFFER_TOO_SMALL = 23
+  RFC_TABLE_MOVE_BOF = 24
+  RFC_TABLE_MOVE_EOF = 25
+  RFC_START_SAPGUI_FAILURE = 26
+  RFC_ABAP_CLASS_EXCEPTION = 27
+  RFC_UNKNOWN_ERROR = 28
+  RFC_AUTHORIZATION_FAILURE = 29
+
+  #-RFCTYPE - RFC data types----------------------------------------------
+  RFCTYPE_CHAR = 0
+  RFCTYPE_DATE = 1
+  RFCTYPE_BCD = 2
+  RFCTYPE_TIME = 3
+  RFCTYPE_BYTE = 4
+  RFCTYPE_TABLE = 5
+  RFCTYPE_NUM = 6
+  RFCTYPE_FLOAT = 7
+  RFCTYPE_INT = 8
+  RFCTYPE_INT2 = 9
+  RFCTYPE_INT1 = 10
+  RFCTYPE_NULL = 14
+  RFCTYPE_ABAPOBJECT = 16
+  RFCTYPE_STRUCTURE = 17
+  RFCTYPE_DECF16 = 23
+  RFCTYPE_DECF34 = 24
+  RFCTYPE_XMLDATA = 28
+  RFCTYPE_STRING = 29
+  RFCTYPE_XSTRING = 30
+  RFCTYPE_BOX = 31
+  RFCTYPE_GENERIC_BOX = 32
+
+  #-RFC_UNIT_STATE - Processing status of a background unit---------------
+  RFC_UNIT_NOT_FOUND = 0 
+  RFC_UNIT_IN_PROCESS = 1 
+  RFC_UNIT_COMMITTED = 2 
+  RFC_UNIT_ROLLED_BACK = 3 
+  RFC_UNIT_CONFIRMED = 4 
+
+  #-RFC_CALL_TYPE - Type of an incoming function call---------------------
+  RFC_SYNCHRONOUS = 0 
+  RFC_TRANSACTIONAL = 1 
+  RFC_QUEUED = 2 
+  RFC_BACKGROUND_UNIT = 3 
+
+  #-RFC_DIRECTION - Direction of a function module parameter--------------
+  RFC_IMPORT = 1 
+  RFC_EXPORT = 2 
+  RFC_CHANGING = RFC_IMPORT + RFC_EXPORT 
+  RFC_TABLES = 4 + RFC_CHANGING 
+
+  #-RFC_CLASS_ATTRIBUTE_TYPE - Type of an ABAP object attribute-----------
+  RFC_CLASS_ATTRIBUTE_INSTANCE = 0 
+  RFC_CLASS_ATTRIBUTE_CLASS = 1 
+  RFC_CLASS_ATTRIBUTE_CONSTANT = 2 
+
+  #-RFC_METADATA_OBJ_TYPE - Ingroup repository----------------------------
+  RFC_METADATA_FUNCTION = 0 
+  RFC_METADATA_TYPE = 1 
+  RFC_METADATA_CLASS = 2 
+
+
+  #-Variables-------------------------------------------------------------
+  ErrInf = RFC_ERROR_INFO; RfcErrInf = ErrInf()
+  ConnParams = RFC_CONNECTION_PARAMETER * 5; RfcConnParams = ConnParams()
+  SConParams = RFC_CONNECTION_PARAMETER * 3; RfcSConParams = SConParams()
+
+
+  #-Library---------------------------------------------------------------
+  # if str(platform.architecture()[0]) == "32bit":
+  #   os.environ['PATH'] += ";C:\\SAPRFCSDK\\32bit"
+  #   SAPNWRFC = "C:\\SAPRFCSDK\\32bit\\sapnwrfc.dll"
+  # elif str(platform.architecture()[0]) == "64bit":
+  #   os.environ['PATH'] += ";C:\\SAPRFCSDK\\64bit"
+  #   SAPNWRFC = "C:\\SAPRFCSDK\\64bit\\sapnwrfc.dll"
+
+  SAPNWRFC = "sapnwrfc.dll"
+  SAP = windll.LoadLibrary(SAPNWRFC)
+
+  #-Prototypes------------------------------------------------------------
+  SAP.RfcAppendNewRow.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcAppendNewRow.restype = c_void_p
+
+  SAP.RfcCreateTable.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcCreateTable.restype = c_void_p
+
+  SAP.RfcCloseConnection.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcCloseConnection.restype = c_ulong
+
+  SAP.RfcCreateFunction.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcCreateFunction.restype = c_void_p
+
+  SAP.RfcCreateFunctionDesc.argtypes = [c_wchar_p, POINTER(ErrInf)]
+  SAP.RfcCreateFunctionDesc.restype = c_void_p
+
+  SAP.RfcDestroyFunction.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcDestroyFunction.restype = c_ulong
+
+  SAP.RfcDestroyFunctionDesc.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcDestroyFunctionDesc.restype = c_ulong
+
+  SAP.RfcGetChars.argtypes = [c_void_p, c_wchar_p, c_void_p, c_ulong, \
+    POINTER(ErrInf)]
+  SAP.RfcGetChars.restype = c_ulong
+
+  SAP.RfcGetCurrentRow.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcGetCurrentRow.restype = c_void_p
+
+  SAP.RfcGetFunctionDesc.argtypes = [c_void_p, c_wchar_p, POINTER(ErrInf)]
+  SAP.RfcGetFunctionDesc.restype = c_void_p
+
+  SAP.RfcGetRowCount.argtypes = [c_void_p, POINTER(c_ulong), \
+    POINTER(ErrInf)]
+  SAP.RfcGetRowCount.restype = c_ulong
+
+  SAP.RfcGetStructure.argtypes = [c_void_p, c_wchar_p, \
+    POINTER(c_void_p), POINTER(ErrInf)]
+  SAP.RfcGetStructure.restype = c_ulong
+
+  SAP.RfcGetTable.argtypes = [c_void_p, c_wchar_p, POINTER(c_void_p), \
+    POINTER(ErrInf)]
+  SAP.RfcGetTable.restype = c_ulong
+
+  SAP.RfcGetVersion.argtypes = [POINTER(c_ulong), POINTER(c_ulong), \
+    POINTER(c_ulong)]
+  SAP.RfcGetVersion.restype = c_wchar_p
+
+  SAP.RfcInstallServerFunction.argtypes = [c_wchar_p, c_void_p, \
+    c_void_p, POINTER(ErrInf)]
+  SAP.RfcInstallServerFunction.restype = c_ulong
+
+  SAP.RfcInvoke.argtypes = [c_void_p, c_void_p, POINTER(ErrInf)]
+  SAP.RfcInvoke.restype = c_ulong
+
+  SAP.RfcListenAndDispatch.argtypes = [c_void_p, c_ulong, POINTER(ErrInf)]
+  SAP.RfcListenAndDispatch.restype = c_ulong
+
+  SAP.RfcMoveToFirstRow.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcMoveToFirstRow.restype = c_ulong
+
+  SAP.RfcMoveToNextRow.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcMoveToNextRow.restype = c_ulong
+
+  SAP.RfcOpenConnection.argtypes = [POINTER(ConnParams), c_ulong, \
+    POINTER(ErrInf)]
+  SAP.RfcOpenConnection.restype = c_void_p
+
+  SAP.RfcPing.argtypes = [c_void_p, POINTER(ErrInf)]
+  SAP.RfcPing.restype = c_ulong
+
+  SAP.RfcRegisterServer.argtypes = [POINTER(SConParams), c_ulong, \
+    POINTER(ErrInf)]
+  SAP.RfcRegisterServer.restype = c_void_p
+
+  SAP.RfcSetChars.argtypes = [c_void_p, c_wchar_p, c_wchar_p, c_ulong, \
+    POINTER(ErrInf)]
+  SAP.RfcSetChars.restype = c_ulong
+  def join_json_objects_multiple_keys(obj1, obj2, primary_keys):
+      result = []
+
+      # Create a dictionary to efficiently look up items in obj2 by combined primary keys
+      obj2_lookup = {}
+      for item2 in obj2:
+          key = tuple(item2[key] for key in primary_keys)  # Create a tuple key
+          obj2_lookup[key] = item2
+
+      for item1 in obj1:
+          key = tuple(item1[key] for key in primary_keys)
+          item2 = obj2_lookup.get(key)  # Efficient lookup
+
+          if item2:
+              merged_object = {**item1, **item2}
+              result.append(merged_object)
+          else:
+              result.append(item1)  # Keep item1 if no match
+              print(f"No match found for {key}")
+
+      return result
+
+
+  #-Main------------------------------------------------------------------
+
+  RfcConnParams[0].name = "ASHOST"; RfcConnParams[0].value = "10.56.7.40"
+  RfcConnParams[1].name = "SYSNR" ; RfcConnParams[1].value = "01"
+  RfcConnParams[2].name = "CLIENT"; RfcConnParams[2].value = "100"
+  RfcConnParams[3].name = "USER"  ; RfcConnParams[3].value = "GAJANANDAM"
+  RfcConnParams[4].name = "PASSWD"; RfcConnParams[4].value = "SunR!se@6789"
+
+  TableName = table_name
+  keyFields = []
+  cnt = 0
+
+  hRFC = SAP.RfcOpenConnection(RfcConnParams, 5, RfcErrInf)
+  if hRFC != None:
+
+    charBuffer = create_unicode_buffer(1048576 + 1)
+
+    hFuncDesc = SAP.RfcGetFunctionDesc(hRFC, "CACS_GET_TABLE_FIELD450", RfcErrInf)
+    if hFuncDesc != 0:
+      hFunc = SAP.RfcCreateFunction(hFuncDesc, RfcErrInf)
+      if hFunc != 0:
+
+        rc = SAP.RfcSetChars(hFunc, "I_TABNAME", TableName, \
+          len(TableName), RfcErrInf)
+        print(SAP.RfcInvoke(hRFC, hFunc, RfcErrInf) == RFC_OK)
+        if SAP.RfcInvoke(hRFC, hFunc, RfcErrInf) == RFC_OK:
+
+          hTable = c_void_p(0)
+          if SAP.RfcGetTable(hFunc, "T_KEYFIELD", hTable, RfcErrInf) == RFC_OK:
+            RowCount = c_ulong(0)
+            rc = SAP.RfcGetRowCount(hTable, RowCount, RfcErrInf)
+            print(RowCount, 1)
+            rc = SAP.RfcMoveToFirstRow(hTable, RfcErrInf)
+            for i in range(0, RowCount.value):
+              hRow = SAP.RfcGetCurrentRow(hTable, RfcErrInf)
+              rc = SAP.RfcGetChars(hRow, "FIELDNAME", charBuffer, 512, RfcErrInf)
+              # print(str(charBuffer.value), end="    ")
+              fieldName = str(charBuffer.value)
+              # rc = SAP.RfcGetChars(hRow, "LENGTH", charBuffer, 512, RfcErrInf)
+              # val = int(charBuffer.value)
+              # if (sum + val < 512):
+              #   sum += val
+              #   l1.append(fieldName.strip())
+              #   # print(sum)
+              # else:
+              keyFields.append(fieldName.strip())
+                # l1 = [fieldName.strip()]
+                # sum = val
+              if i < RowCount.value:
+                rc = SAP.RfcMoveToNextRow(hTable, RfcErrInf)
+
+        rc = SAP.RfcDestroyFunction(hFunc, RfcErrInf)
+
+    # rc = SAP.RfcCloseConnection(hRFC, RfcErrInf)
+
+    print(*keyFields)
+
+    keyFieldsCnt = len(keyFields)
+    print(keyFieldsCnt)
+  else:
+    print(RfcErrInf.key)
+    print(RfcErrInf.message)
+
+
+  ind, keyDict = 0, {}
+
+  # hRFC = SAP.RfcOpenConnection(RfcConnParams, 5, RfcErrInf)
+  if hRFC != None:
+
+    charBuffer = create_unicode_buffer(1048576 + 1)
+
+    hFuncDesc = SAP.RfcGetFunctionDesc(hRFC, "Z450RFC_READ_TABLE", RfcErrInf)
+    if hFuncDesc != 0:
+      hFunc = SAP.RfcCreateFunction(hFuncDesc, RfcErrInf)
+      if hFunc != 0:
+
+        rc = SAP.RfcSetChars(hFunc, "QUERY_TABLE", TableName, \
+          len(TableName), RfcErrInf)
+        rc = SAP.RfcSetChars(hFunc, "DELIMITER", "~", 1, RfcErrInf)
+        if SAP.RfcInvoke(hRFC, hFunc, RfcErrInf) == RFC_OK:
+
+          hTable = c_void_p(0)
+          if SAP.RfcGetTable(hFunc, "FIELDS", hTable, RfcErrInf) == RFC_OK:
+            
+            
+            sum, l, l1 = 0, [], keyFields.copy()
+            keyFieldsLen = 0
+            RowCount = c_ulong(0)
+            rc = SAP.RfcGetRowCount(hTable, RowCount, RfcErrInf)
+            print(RowCount)
+            rc = SAP.RfcMoveToFirstRow(hTable, RfcErrInf)
+            for i in range(0, RowCount.value):
+              hRow = SAP.RfcGetCurrentRow(hTable, RfcErrInf)
+              rc = SAP.RfcGetChars(hRow, "FIELDNAME", charBuffer, 512, RfcErrInf)
+              # print(str(charBuffer.value), end="    ")
+              fieldName = str(charBuffer.value)
+              rc = SAP.RfcGetChars(hRow, "LENGTH", charBuffer, 512, RfcErrInf)
+              val = int(charBuffer.value)
+              cnt += 1
+              # print(fieldName.strip(), cnt)
+              if (i < keyFieldsCnt):
+                print(i)
+                i += 1
+                keyFieldsLen += val
+              else:
+                if (sum + val + keyFieldsLen < 400):
+                  sum += val
+                  l1.append(fieldName.strip())
+                  # print(sum)
+                else:
+                  l.append(l1)
+                  l1 = keyFields.copy()
+                  l1.append(fieldName.strip())
+                  # print(sum + keyFieldsLen)
+                  sum = val
+                  
+              if i < RowCount.value:
+                rc = SAP.RfcMoveToNextRow(hTable, RfcErrInf)
+            l.append(l1)
+        rc = SAP.RfcDestroyFunction(hFunc, RfcErrInf)
+
+    # rc = SAP.RfcCloseConnection(hRFC, RfcErrInf)
+
+    # print(l)
+  else:
+    print(RfcErrInf.key)
+    print(RfcErrInf.message)
+
+  # for i in l:
+  #   print(i[:2])
+
+  length = 0
+  ccc=1
+  for ii in l:
+    for jj in ii:
+      if (jj == 'MANDT' or jj == 'MATNR'): continue
+      length += 1
+  print(length)
+
+  jsonTemp = jsonPrimary = []
+  for splittedFields in l:
+    # hRFC = SAP.RfcOpenConnection(RfcConnParams, 5, RfcErrInf)
+    if hRFC != None:
+
+      charBuffer = create_unicode_buffer(1048576 + 1)
+
+      hFuncDesc = SAP.RfcGetFunctionDesc(hRFC, "Z450RFC_READ_TAB_DATA", RfcErrInf)
+      if hFuncDesc != 0:
+        hFunc = SAP.RfcCreateFunction(hFuncDesc, RfcErrInf)
+        if hFunc != 0:
+
+          rc = SAP.RfcSetChars(hFunc, "QUERY_TABLE", TableName, \
+            len(TableName), RfcErrInf)
+          rc = SAP.RfcSetChars(hFunc, "DELIMITER", "~", 1, RfcErrInf)
+
+          #MATNR,MTART,ATTYP,SATNR,MATKL,MBRSH,MEINS,SPART,BISMT,DATAB,LIQDT,NORMT,GROES,LABOR,BRGEW,NTGEW,GEWEI,LAENG,BREIT,HOEHE,MEABM,VOLUM,VOLEH,KZKFG,IPRKZ,RAUBE,TEMPB,BEHVO,STOFF,ETIAR,ETIFO,WESCH,XGCHP,MHDHB,MHDRZ,SLED_BBD
+
+          field = ','.join(splittedFields)
+          # print(field)
+          rc = SAP.RfcSetChars(hFunc, "FIELDNAME", field, len(field), RfcErrInf)
+
+          # print(SAP.RfcInvoke(hRFC, hFunc, RfcErrInf) == RFC_OK)
+          if SAP.RfcInvoke(hRFC, hFunc, RfcErrInf) == RFC_OK:
+
+            hTable = c_void_p(0)
+            if SAP.RfcGetTable(hFunc, "DATA", hTable, RfcErrInf) == RFC_OK:
+
+              RowCount = c_ulong(0)
+              rc = SAP.RfcGetRowCount(hTable, RowCount, RfcErrInf)
+              rc = SAP.RfcMoveToFirstRow(hTable, RfcErrInf)
+              for i in range(0, RowCount.value):
+                hRow = SAP.RfcGetCurrentRow(hTable, RfcErrInf)
+                rc = SAP.RfcGetChars(hRow, "WA", charBuffer, 1024, RfcErrInf)
+                data_row=charBuffer.value
+                # data_dict = {field: value for field, value in zip(splittedFields, data_row)}
+                # print(data_dict)
+
+                data_row = charBuffer.value.split("~")
+  
+                                  # Create dictionary using only requested fields
+                              # data_dict = {field: value for field, value in zip(field, data_row)}
+                              # # print(charBuffer.value)
+                              # res.append(data_dict)
+                fields = field.split(",")
+                data_dict = {f: v.strip() for f, v in zip(fields, data_row)}
+                jsonTemp.append(data_dict)
+
+                if i < RowCount.value:
+                  rc = SAP.RfcMoveToNextRow(hTable, RfcErrInf)
+
+          rc = SAP.RfcDestroyFunction(hFunc, RfcErrInf)
+      # print(jsonTemp)
+      # Convert JSON to DataFrame
+        df = pd.DataFrame(jsonTemp)
+
+        # Save DataFrame to Excel file in a desired location
+        
+        excel_filename = "data"+str(ccc)+".xlsx"
+        ccc+=1
+        df.to_excel(excel_filename, index=False)
+      if (jsonPrimary == []): 
+        jsonPrimary = jsonTemp
+      else:
+        jsonPrimary = join_json_objects_multiple_keys(jsonPrimary, jsonTemp, keyFields[1:])
+      jsonTemp = []
+      # rc = SAP.RfcCloseConnection(hRFC, RfcErrInf)
+
+    else:
+      print(RfcErrInf.key)
+      print(RfcErrInf.message)
+
+
+  del SAP
+
+  # for d in jsonPrimary:
+  #   for j in d:
+  #     d[j] = d[j].strip()
+
+  return jsonPrimary
+
+
+def drop_table_dynamically(table_name, database_name='default'):
+    try:
+        with connections[database_name].cursor() as cursor:
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+            if not cursor.fetchone():
+                print(f"Table '{table_name}' does not exist in {database_name} database.")
+                return
+ 
+            drop_table_sql = f"DROP TABLE {table_name};"
+ 
+            with transaction.atomic(using=database_name):
+                cursor.execute(drop_table_sql)
+                return 1
+ 
+            print(f"Table '{table_name}' dropped successfully from {database_name} database.")
+ 
+    except Exception as e:
+        print(f"Error dropping table: {e}")
+
+
+def create_and_insert_data(table_name, data):
+    if not data:
+        print("No data provided. Table creation and insertion skipped.")
+        return
+    try:
+        with connections["default"].cursor() as cursor:
+            # 1. Create Table (Simplified - Same structure assumed)
+            first_row = data[0]
+            drop_table_dynamically(table_name=table_name)
+            create_table_sql = f"CREATE TABLE IF NOT EXISTS {table_name} ("
+
+            columns = []
+            for key, value in first_row.items():  # Iterate through the first row only
+                column_name = key
+                column_type = "TEXT"  # Default type (you can refine this based on value types)
+                columns.append(f'"{column_name}" {column_type}')
+
+            create_table_sql += ", ".join(columns) + ")"
+            cursor.execute(create_table_sql)
+
+
+            # 2. Insert Data (Same as before)
+            insert_sql = f"INSERT INTO {table_name} (" + ", ".join(f'"{key}"' for key in first_row) + ") VALUES (" + ", ".join(["%s"] * len(first_row)) + ")"
+
+            for row in data:
+                values = list(row.values())
+                cursor.execute(insert_sql, values)
+
+            connections["default"].commit()
+            print(f"Table '{table_name}' created and data inserted successfully.")
+
+    except Exception as e:
+        connections["default"].rollback()
+        print(f"Error creating/inserting data: {e}")
+
+
+@api_view(['POST'])
+def get_table_from_sap(request):
+    print("started")
+    jsonPrimary = func(request.data['table_name'].upper()) 
+    
+    # Convert JSON to DataFrame
+    df = pd.DataFrame(jsonPrimary)
+
+    # Save DataFrame to Excel file in a desired location
+    excel_filename = f"{request.data['table_name'].upper()}_data.xlsx"
+    df.to_excel(excel_filename, index=False)
+
+    create_and_insert_data(request.data['table_name'].upper(), jsonPrimary)
+    return Response("Done")
 
 
 @api_view(['POST'])
@@ -608,10 +1150,8 @@ def process_select_query(request, file_id):
         file_id = int(file_id)
     except ValueError:
         return Response({"error": "file_id must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-    table_rows = TableMeta.objects.filter(file_id=file_id)
-    table_names = list(table_rows.values_list('table_name', flat=True))
-    table_name = table_names[0]
-    if(table_name):table_name+="_copy"
+    table_name = "Z52_MATDOC"
+    # if(table_name):table_name+="_copy"
     dq = DQTool(table_name=table_name)
     result = dq.process_query(request.data['prompt'])
     
@@ -636,182 +1176,6 @@ def process_select_query(request, file_id):
         if 'last_error' in result:
             print("Last error:", result['last_error'])
 
-
-
-@api_view(['POST'])
-def create_error_records(request,file_id):
-    try:
-        try:
-            file_id = int(file_id)
-        except ValueError:
-            return Response({"error": "file_id must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-        table_rows = TableMeta.objects.filter(file_id=file_id)
-        table_names = list(table_rows.values_list('table_name', flat=True))
-        table_name = table_names[0]
-        insert_dicts_with_prompt_and_deduplicate(request.data['rows'],table_name+"_err",request.data['prompt'])
-        return Response(status=status.HTTP_200_OK)
-    except:
-        return Response(status=status.HTTP_409_CONFLICT)
-
-@api_view(['GET'])
-def get_error_table(request,file_id):
-    try:
-        file_id = int(file_id)
-    except ValueError:
-        return Response({"error": "file_id must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-    table_rows = TableMeta.objects.filter(file_id=file_id)
-    table_names = list(table_rows.values_list('table_name', flat=True))
-    table_name = table_names[0]
-    return table_to_custom_json(table_name+"_err")
-
-# def dynamic_side_by_side_select(table_a, table_b, join_columns):
-#     import sqlite3
-#     cur = connection.cursor()
-#     cur.execute(f"PRAGMA table_info({table_a})")
-#     columns_info = cur.fetchall()
-#     columns = [col[1] for col in columns_info]
-
-#     select_list = []
-#     col_names = []
-#     for col in columns:
-#         if(col in join_columns):
-#             select_list.append(f"PRELOAD.{col}")
-#             col_names.append(f"{col}")
-#         else:    
-#             select_list.append(f"PRELOAD.{col}")
-#             col_names.append(f"PRELOAD_{col}")
-#             select_list.append(f"POSTLOAD.{col}")
-#             col_names.append(f"POSTLOAD_{col}")
-#     select_clause = ", ".join(select_list)
-
-#     join_conditions = " AND ".join([f"PRELOAD.{col} = POSTLOAD.{col}" for col in join_columns])
-
-#     query = f"""
-#     SELECT {select_clause}
-#     FROM {table_a} PRELOAD
-#     INNER JOIN {table_b} POSTLOAD
-#     ON {join_conditions}
-#     """
-
-#     cur.execute(query)
-#     rows = cur.fetchall()
-
-#     df = pd.DataFrame(rows, columns=col_names)
-#     return df
-def dynamic_side_by_side_select(table_a, table_b, join_columns):
-    import sqlite3
-    import pandas as pd
-
-    cur = connection.cursor()
-    cur.execute(f"PRAGMA table_info({table_a})")
-    columns_info = cur.fetchall()
-    columns = [col[1] for col in columns_info]
-
-    select_list = []
-    final_col_names = []
-    compare_cols = []
-    for col in columns:
-        if col in join_columns:
-            select_list.append(f"PRELOAD.{col}")
-            final_col_names.append(f"{col}")
-        else:
-            select_list.append(f"PRELOAD.{col}")
-            select_list.append(f"POSTLOAD.{col}")
-            final_col_names.append(f"PRELOAD_{col}")
-            final_col_names.append(f"POSTLOAD_{col}")
-            compare_cols.append(col)
-            final_col_names.append(f"{col}_flag")  # add flag right after data columns
-
-    select_clause = ", ".join(select_list)
-    join_conditions = " AND ".join([f"PRELOAD.{col} = POSTLOAD.{col}" for col in join_columns])
-    query = f"""
-    SELECT {select_clause}
-    FROM {table_a} PRELOAD
-    INNER JOIN {table_b} POSTLOAD
-    ON {join_conditions}
-    """
-    cur.execute(query)
-    rows = cur.fetchall()
-    df = pd.DataFrame(rows, columns=[col for col in final_col_names if not col.endswith('_flag')])  # Start with only actual selected columns
-
-    # Insert flag columns after corresponding pairs
-    for col in compare_cols:
-        flag_col = f"{col}_flag"
-        df[flag_col] = (df[f"PRELOAD_{col}"] == df[f"POSTLOAD_{col}"]) | (df[f"PRELOAD_{col}"].isnull() & df[f"POSTLOAD_{col}"].isnull())
-        df[flag_col] = df[flag_col].astype(str)
-    # Reorder columns for inline placement
-    df = df[final_col_names]
-    return df
-
-
-def flag_based_diff_df(df, primary_keys):
-    # List to collect rows for the new DataFrame
-    records = []
-    # Find compared column names from _flag columns
-    compare_cols = [col[:-5] for col in df.columns if col.endswith('_flag')]
-    # Iterate over rows in the DataFrame
-    for idx, row in df.iterrows():
-        pk_values = [row[pk] for pk in primary_keys]
-        # For each compared column, check the flag
-        for col in compare_cols:
-            if row[f"{col}_flag"] == False:
-                # Prepare record
-                record = pk_values + [
-                    col, 
-                    row[f"PRELOAD_{col}"], 
-                    row[f"POSTLOAD_{col}"], 
-                    False
-                ]
-                records.append(record)
-    # Prepare columns for new DataFrame
-    new_columns = primary_keys + [
-        "FIELD_NAME", 
-        "PRELOAD_VALUE", 
-        "POSTLOAD_VALUE", 
-        "FLAG"
-    ]
-    new_df = pd.DataFrame(records, columns=new_columns)
-    return new_df
-
-@api_view(["GET"])
-def Get_Post_Load_Report(request,pre_id,post_id):
-    pre_table = TableMeta.objects.get(table_id=pre_id).table_name
-    pre_table_pks = TableMeta.objects.get(table_id=pre_id).primary_keys
-    pre_table_pks = pre_table_pks.split(",")
-    post_table = TableMeta.objects.get(table_id=post_id).table_name
-    post_table_pks = TableMeta.objects.get(table_id=post_id).primary_keys
-    post_table_pks = post_table_pks.split(",")
-    # if(pre_table_pks==post_table_pks):
-    df=dynamic_side_by_side_select(pre_table,post_table,post_table_pks)
-    print(df.head())
-    print(df.columns)
-    df.to_excel(r"C:\Users\gajananda.mallidi\Downloads\POST_LOAD.xlsx", index=False)
-    pivot_df = flag_based_diff_df(df,post_table_pks)
-    pivot_df.to_excel(r"C:\Users\gajananda.mallidi\Downloads\PIVOT.xlsx", index=False)
-    return dataframe_to_custom_json(df)
-
-@api_view(["GET"])
-def Get_Post_Load_Pivot(request,pre_id,post_id):
-    pre_table = TableMeta.objects.get(table_id=pre_id).table_name
-    pre_table_pks = TableMeta.objects.get(table_id=pre_id).primary_keys
-    pre_table_pks = pre_table_pks.split(",")
-    post_table = TableMeta.objects.get(table_id=post_id).table_name
-    post_table_pks = TableMeta.objects.get(table_id=post_id).primary_keys
-    post_table_pks = post_table_pks.split(",")
-    # if(pre_table_pks==post_table_pks):
-    df=dynamic_side_by_side_select(pre_table,post_table,pre_table_pks)
-    print(df.head())
-    print(df.columns)
-    df.to_excel(r"C:\Users\gajananda.mallidi\Downloads\POST_LOAD.xlsx", index=False)
-    pivot_df = flag_based_diff_df(df,post_table_pks)
-    pivot_df.to_excel(r"C:\Users\gajananda.mallidi\Downloads\PIVOT.xlsx", index=False)
-    return dataframe_to_custom_json(pivot_df)
-
-@api_view(["GET"])
-def get_tables_by_project(request, pid):
-    queryset = TableMeta.objects.filter(project_id=pid).all()
-    serializer = TableMetaSerializer(queryset, many=True)
-    return Response(serializer.data)
 
 
 

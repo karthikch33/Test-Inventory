@@ -189,3 +189,5 @@ LLM_Backend/connection/MAT_MASTER_BASIC_ENR_20250707_1150.xlsx
 joined_result.xlsx
 LLM_Backend/connection/migrations/0002_connection_sample_del.py
 LLM_Backend/connection/migrations/*
+LLM_Backend/db.zip
+LLM_Backend/Z52_MATDOC_data.xlsx
