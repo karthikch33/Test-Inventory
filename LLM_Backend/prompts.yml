@@ -16,7 +16,35 @@ query_understanding: |
 
   CRITICAL RULES FOR UNDERSTANDING:
 
-  A. JOIN DETECTION AND EXTRACTION:
+  A. SEMANTIC FIELD MATCHING (NEW - Use descriptions for better field identification):
+     IMPORTANT: When field descriptions are provided in "Available Tables and Columns" above, 
+     use them to understand the SEMANTIC MEANING of fields, not just column names.
+     
+     Matching Priority:
+     1. Check if user's term matches a field DESCRIPTION (semantic match)
+     2. Then check if user's term matches a column NAME (exact/fuzzy match)
+     3. Prioritize semantic meaning over string similarity
+     
+     Examples of semantic matching:
+     - User says "material number" or "product code"
+       → Look for description containing "Material Number" or "Product"
+       → Might match column "MATNR" (even though name doesn't match user's term)
+     
+     - User says "plant location" or "facility"
+       → Look for description containing "Plant" or "Location"
+       → Might match column "WERKS" 
+     
+     - User says "sales price" or "selling price"
+       → Look for description containing "Price" or "Net Price"
+       → Might match column "NETPR"
+     
+     - User says "customer name" or "client name"
+       → Look for description containing "Customer" or "Name"
+       → Might match column "KUNNR" or "NAME1"
+     
+     When semantic matching is used, include it in semantic_mappings output.
+
+  B. JOIN DETECTION AND EXTRACTION:
      VERY IMPORTANT: Extract BOTH file name AND join column if user provides them
      
      Patterns to detect:
@@ -33,7 +61,7 @@ query_understanding: |
      
      CRITICAL: If user mentions a column name after "on" or "using", you MUST capture it in join_column field!
 
-  B. NULL/BLANK VALUE DETECTION:
+  C. NULL/BLANK VALUE DETECTION:
      - Words like "blank", "empty", "null", "missing", "not filled" indicate NULL checks
      - "where X is blank" → check if X IS NULL
      - "where X is not blank" → check if X IS NOT NULL
@@ -41,65 +69,70 @@ query_understanding: |
      - "all columns are blank" → check if ALL columns ARE NULL (use AND logic)
      - When checking for blank/null values, DO NOT use the "values" field - use a special "null_check" field instead
 
-  C. LOGICAL OPERATORS:
+  D. LOGICAL OPERATORS:
      - "any of" / "either" / "or" → OR logic between conditions
      - "all of" / "both" / "and" → AND logic between conditions
      - "where any column is blank" → (col1 IS NULL OR col2 IS NULL OR col3 IS NULL)
      - "where all columns are blank" → (col1 IS NULL AND col2 IS NULL AND col3 IS NULL)
 
-  D. VALUE MATCHING:
+  E. VALUE MATCHING:
      - Only populate "values" field when user provides actual values to match
      - "where status = active" → values: ["active"]
      - "where status is blank" → null_check: true, values: []
 
-  E. COLUMN QUALIFICATION:
+  F. COLUMN QUALIFICATION:
      - For JOIN queries, try to identify which table columns belong to
      - If ambiguous, use table.column format when possible
      - For single table queries, column name alone is fine
 
-  F. NEGATION:
+  G. NEGATION:
      - "not blank" / "not empty" / "filled" → IS NOT NULL
      - "not equal" / "not matching" → != operator
 
-  G. LENGTH/STRING OPERATIONS:
+  H. LENGTH/STRING OPERATIONS:
      - "length of column" / "number of characters in column" → use LENGTH function
      - IMPORTANT: Mark this as a LENGTH operation by adding "function": "LENGTH" in the filter
      - Example: "where length of STATUS is 5" → add "function": "LENGTH" to filter
      - DO NOT put LENGTH() in the field name - keep field as just the column name
      - The SQL generator will automatically cast numeric columns and leave text columns as-is
+  I. DISTINCT HANDLING:
+     - If query_plan["distinct"] is true, add DISTINCT keyword
+     - Place DISTINCT right after SELECT: SELECT DISTINCT column1, column2
 
   Return ONLY a JSON object with this structure:
-  {{
-      "intent": "select or update",
-      "columns": ["table1.column1", "table2.column2"] or ["*"] for all columns,
-      "joins": [
-          {{
-              "file_name": "filename.csv",
-              "join_column": "column_name or null",
-              "join_type": "INNER"
-          }}
-      ],
-      "filters": [
-          {{
-              "field": "column_name or table.column_name",
-              "operator": "=",
-              "values": ["value1", "value2"],
-              "null_check": false,
-              "logical_connector": "AND"
-          }},
-          {{
-              "field": "column_name2",
-              "operator": "IS NULL",
-              "values": [],
-              "null_check": true,
-              "logical_connector": "OR"
-          }}
-      ],
-      "order_by": {{"column": "column_name", "direction": "ASC"}},
-      "aggregations": [{{"function": "COUNT", "column": "*"}}],
-      "limit": 10
-  }}
-
+    {{
+        "intent": "select or update",
+        "columns": ["table1.column1", "table2.column2"] or ["*"] for all columns,
+        "semantic_mappings": [
+            {{
+                "user_term": "what user said (e.g., 'material number')",
+                "matched_column": "actual_column_name (e.g., 'MATNR')",
+                "matched_via": "description_match or name_match",
+                "description": "the field description that enabled the match",
+                "confidence": 0.95
+            }}
+        ],
+        "joins": [
+            {{
+                "file_name": "filename.csv",
+                "join_column": "column_name or null",
+                "join_type": "INNER"
+            }}
+        ],
+        "filters": [
+            {{
+                "field": "column_name or table.column_name",
+                "operator": "=",
+                "values": ["value1", "value2"],
+                "null_check": false,
+                "logical_connector": "AND"
+            }}
+        ],
+        "order_by": {{"column": "column_name", "direction": "ASC"}},
+        "aggregations": [{{"function": "COUNT", "column": "*"}}],
+        "limit": 10
+    }}
+  
   FIELD EXPLANATIONS:
   
   joins array:
@@ -208,71 +241,103 @@ sql_generation: |
   Generate a SQL query based on this analyzed plan.
 
   Primary Table: {table_name}
-  All Tables Schema: {schema}
+  All Tables Schema (with descriptions): {schema}
   Join Metadata: {join_metadata}
-
+ 
   Query Plan:
   {query_plan}
 
   Corrected Filter Values:
   {corrected_values}
 
+  IMPORTANT CONTEXT:
+  The schema above includes field "descriptions" that show the semantic meaning of each column.
+  Use these descriptions to:
+  1. Validate that the correct columns are being selected
+  2. Verify the query matches the user's semantic intent
+  3. Choose between ambiguous columns based on their described purpose
+  
+  Example schema structure:
+  {{
+      "table_name": {{
+          "columns": ["MATNR", "WERKS", "NETPR"],
+          "types": {{"MATNR": "TEXT", "WERKS": "TEXT", "NETPR": "REAL"}},
+          "descriptions": {{
+              "MATNR": "Material Number - Unique identifier for materials",
+              "WERKS": "Plant - Manufacturing facility location",
+              "NETPR": "Net Price - Selling price without tax"
+          }}
+      }}
+  }}
+  
   CRITICAL SQL GENERATION RULES:
+  1. DESCRIPTION-AWARE COLUMN SELECTION (NEW - Validate semantic correctness):
+   - If query_plan includes "semantic_mappings", respect those field mappings
+   - Cross-check selected columns against their descriptions to ensure correctness
+   - If a column's description doesn't semantically match the query intent, flag warning
+   
+   Validation steps:
+   a) Review each column being selected/filtered
+   b) Check its description in the schema
+   c) Verify description aligns with user's query intent
+   d) If mismatch detected, use the correct column based on description
+   
+   Example validation:
+   - User asks: "Get material prices"
+   - Query plan selects: "NETPR" 
+   - Check description: "Net Price - Selling price without tax" ✓ CORRECT
+   - Generate: SELECT NETPR FROM ...
+   
+   - User asks: "Get plant codes"
+   - Query plan selects: "MATNR"
+   - Check description: "Material Number" ✗ WRONG
+   - Should use: "WERKS" (description: "Plant") ✓ CORRECT
+   - Generate: SELECT WERKS FROM ...
 
-  1. JOIN HANDLING:
-     - Use the join_metadata to construct proper JOIN clauses
-     - join_metadata contains resolved information:
-       * table_name: The actual table to join
-       * join_column: The column to join on (validated)
-       * primary_table_column: Column in primary table (usually same as join_column)
-       * join_type: INNER, LEFT, RIGHT, or FULL
-       * join_source: 'user_specified' or 'primary_key' (indicates where join column came from)
-     
-     - Use table aliases for clarity when needed (e.g., t1, t2)
-     - Ensure all columns in SELECT are properly qualified with table names when there's ambiguity
-     
-     Example:
-     FROM materials m
-     INNER JOIN suppliers s ON m.supplier_id = s.supplier_id
-     WHERE m.status = 'active'
+  2. JOIN HANDLING:
+   - Use the join_metadata to construct proper JOIN clauses
+   - Format: FROM table1 INNER JOIN table2 ON table1.pk = table2.fk
+   - Use table aliases for clarity when needed
+   - Ensure all columns in SELECT are properly qualified with table names
+   - When joining, descriptions help identify correct join columns across tables
 
-  2. NULL VALUE HANDLING:
+  3. NULL VALUE HANDLING:
      - If filter has "null_check": true, use IS NULL or IS NOT NULL operators
      - NEVER use IN () with empty array for NULL checks
      - "operator": "IS NULL" → WHERE column_name IS NULL
      - "operator": "IS NOT NULL" → WHERE column_name IS NOT NULL
 
-  3. LOGICAL CONNECTORS:
+  4. LOGICAL CONNECTORS:
      - Pay attention to "logical_connector" field in each filter
      - "OR" connector: Use parentheses for clarity: (col1 IS NULL OR col2 IS NULL)
      - "AND" connector: Standard AND between conditions
      - When mixing AND/OR, use proper parentheses for precedence
 
-  4. VALUE MATCHING:
+  5. VALUE MATCHING:
      - Use corrected filter values from the validation step
      - Single value: WHERE column = 'value'
      - Multiple values: WHERE column IN ('value1', 'value2')
      - Empty values array with null_check=true: Use IS NULL/IS NOT NULL
 
-  5. COLUMN SELECTION:
+  6. COLUMN SELECTION:
      - If columns array is ["*"] or empty, use SELECT *
      - For JOINs with SELECT *, consider selecting from all tables: SELECT t1.*, t2.*
      - Otherwise, SELECT specific columns listed
      - Always qualify column names if there's potential for ambiguity
 
-  6. COLUMN QUALIFICATION IN WHERE CLAUSES:
+  7. COLUMN QUALIFICATION IN WHERE CLAUSES:
      - For JOINs, qualify filter columns with table names to avoid ambiguity
      - If filter field already has table.column format, use it directly
      - If not qualified, use primary table name as prefix
      - Example: WHERE materials.status = 'active'
 
-  7. SQLITE COMPATIBILITY:
+  8. SQLITE COMPATIBILITY:
      - Use single quotes for string values
      - Use proper escaping for special characters
      - No nested subqueries unless necessary
      - Standard SQLite syntax
 
-  8. QUERY STRUCTURE:
+  9. QUERY STRUCTURE:
      - Start with SELECT
      - Add FROM clause with primary table
      - Add JOIN clauses for each join in join_metadata
@@ -281,7 +346,7 @@ sql_generation: |
      - Add LIMIT if specified
      - Use proper spacing and formatting for readability
      
-  9. LENGTH FUNCTION HANDLING:
+  10. LENGTH FUNCTION HANDLING:
      CRITICAL: Check column type in schema BEFORE applying LENGTH
      
      Steps:
