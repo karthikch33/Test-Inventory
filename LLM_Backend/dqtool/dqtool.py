@@ -494,197 +494,197 @@ Updated DQTool Methods to Use connection_glossary Table
 SIMPLER APPROACH: Direct column_name → column_desc mapping
 """
 
-def _fetch_table_metadata_with_descriptions(self, table_name: str) -> Dict[str, Any]:
-    """
-    Fetch metadata about a table structure INCLUDING field descriptions
-    Uses connection_glossary table for semantic descriptions
-    
-    Returns:
-        Dict containing: table_name, columns, column_types, sample_data, column_descriptions
-    """
-    try:
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+    def _fetch_table_metadata_with_descriptions(self, table_name: str) -> Dict[str, Any]:
+        """
+        Fetch metadata about a table structure INCLUDING field descriptions
+        Uses connection_glossary table for semantic descriptions
         
-        # Get basic column info
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns = cursor.fetchall()
-        
-        if not columns:
-            raise ValueError(f"Table '{table_name}' not found in database")
-        
-        metadata = {
-            'table_name': table_name,
-            'columns': [],
-            'column_types': {},
-            'sample_data': {},
-            'column_descriptions': {}  # Store semantic descriptions
-        }
-        
-        # MODIFIED: Fetch descriptions from connection_glossary table (SIMPLER!)
-        try:
-            # Check if connection_glossary table exists
-            cursor.execute("""
-                SELECT name FROM sqlite_master 
-                WHERE type='table' AND name='connection_glossary'
-            """)
-            has_glossary_table = cursor.fetchone() is not None
-            
-            if has_glossary_table:
-                # Simple query: just get column_name and column_desc
-                cursor.execute("""
-                    SELECT column_name, column_desc
-                    FROM connection_glossary
-                    WHERE column_name IS NOT NULL 
-                    AND column_desc IS NOT NULL
-                """)
-                
-                glossary_entries = cursor.fetchall()
-                
-                # Build a lookup dictionary for all columns in glossary
-                glossary_lookup = {}
-                for col_name, col_desc in glossary_entries:
-                    if col_name and col_desc:
-                        # Store with both original case and lowercase for flexible matching
-                        glossary_lookup[col_name.lower()] = {
-                            'original_name': col_name,
-                            'description': col_desc
-                        }
-                
-                logger.info(f"Loaded {len(glossary_lookup)} entries from connection_glossary")
-                
-                # Match table columns to glossary entries
-                for col in columns:
-                    col_name = col[1]
-                    col_name_lower = col_name.lower()
-                    
-                    # Try to find description in glossary
-                    if col_name_lower in glossary_lookup:
-                        description = glossary_lookup[col_name_lower]['description']
-                        metadata['column_descriptions'][col_name] = description
-                        logger.debug(f"Matched column '{col_name}' to glossary: {description}")
-                    else:
-                        # Try partial matching (e.g., "posting_date" matches "POSTINGDATE")
-                        col_normalized = col_name_lower.replace('_', '').replace(' ', '')
-                        for glossary_key, glossary_data in glossary_lookup.items():
-                            glossary_normalized = glossary_key.replace('_', '').replace(' ', '')
-                            if col_normalized == glossary_normalized:
-                                description = glossary_data['description']
-                                metadata['column_descriptions'][col_name] = description
-                                logger.debug(f"Matched column '{col_name}' to glossary entry '{glossary_key}': {description}")
-                                break
-                
-                if metadata['column_descriptions']:
-                    logger.info(f"Loaded {len(metadata['column_descriptions'])} field descriptions for table {table_name}")
-                else:
-                    logger.warning(f"No matching descriptions found in glossary for table {table_name}")
-            else:
-                logger.warning("connection_glossary table not found - semantic matching disabled")
-                
-        except Exception as e:
-            logger.warning(f"Could not fetch descriptions from connection_glossary: {e}")
-            logger.warning("Continuing without descriptions - system will use exact column name matching only")
-        
-        # Populate column info and sample data (original logic)
-        for col in columns:
-            col_name = col[1]
-            col_type = col[2]
-            metadata['columns'].append(col_name)
-            metadata['column_types'][col_name] = col_type
-            
-            cursor.execute(f"SELECT DISTINCT {col_name} FROM {table_name} LIMIT 10")
-            samples = [row[0] for row in cursor.fetchall() if row[0] is not None]
-            metadata['sample_data'][col_name] = samples
-        
-        conn.close()
-        
-        logger.info(f"Fetched metadata for table {table_name}: {len(metadata['columns'])} columns, "
-                   f"{len(metadata['column_descriptions'])} with descriptions")
-        return metadata
-        
-    except Exception as e:
-        logger.error(f"Error fetching table metadata: {e}")
-        raise
-
-
-def _get_column_description(self, column: str, table_name: Optional[str] = None) -> Optional[str]:
-    """
-    Get description for a column if available from loaded metadata
-    
-    Args:
-        column: Column name
-        table_name: Optional table name (defaults to primary table)
-        
-    Returns:
-        Description string or None
-    """
-    # Check in current table metadata first
-    if 'column_descriptions' in self.table_metadata:
-        desc = self.table_metadata['column_descriptions'].get(column)
-        if desc:
-            return desc
-        
-        # Try case-insensitive match
-        column_lower = column.lower()
-        for col_name, col_desc in self.table_metadata['column_descriptions'].items():
-            if col_name.lower() == column_lower:
-                return col_desc
-    
-    # If not found and a different table was specified, try to fetch from glossary directly
-    if table_name and table_name != self.table_name:
+        Returns:
+            Dict containing: table_name, columns, column_types, sample_data, column_descriptions
+        """
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            # Try exact match first
-            cursor.execute("""
-                SELECT column_desc 
-                FROM connection_glossary 
-                WHERE LOWER(column_name) = LOWER(?)
-                LIMIT 1
-            """, (column,))
+            # Get basic column info
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = cursor.fetchall()
             
-            result = cursor.fetchone()
+            if not columns:
+                raise ValueError(f"Table '{table_name}' not found in database")
+            
+            metadata = {
+                'table_name': table_name,
+                'columns': [],
+                'column_types': {},
+                'sample_data': {},
+                'column_descriptions': {}  # Store semantic descriptions
+            }
+            
+            # MODIFIED: Fetch descriptions from connection_glossary table (SIMPLER!)
+            try:
+                # Check if connection_glossary table exists
+                cursor.execute("""
+                    SELECT name FROM sqlite_master 
+                    WHERE type='table' AND name='connection_glossary'
+                """)
+                has_glossary_table = cursor.fetchone() is not None
+                
+                if has_glossary_table:
+                    # Simple query: just get column_name and column_desc
+                    cursor.execute("""
+                        SELECT column_name, column_desc
+                        FROM connection_glossary
+                        WHERE column_name IS NOT NULL 
+                        AND column_desc IS NOT NULL
+                    """)
+                    
+                    glossary_entries = cursor.fetchall()
+                    
+                    # Build a lookup dictionary for all columns in glossary
+                    glossary_lookup = {}
+                    for col_name, col_desc in glossary_entries:
+                        if col_name and col_desc:
+                            # Store with both original case and lowercase for flexible matching
+                            glossary_lookup[col_name.lower()] = {
+                                'original_name': col_name,
+                                'description': col_desc
+                            }
+                    
+                    logger.info(f"Loaded {len(glossary_lookup)} entries from connection_glossary")
+                    
+                    # Match table columns to glossary entries
+                    for col in columns:
+                        col_name = col[1]
+                        col_name_lower = col_name.lower()
+                        
+                        # Try to find description in glossary
+                        if col_name_lower in glossary_lookup:
+                            description = glossary_lookup[col_name_lower]['description']
+                            metadata['column_descriptions'][col_name] = description
+                            logger.debug(f"Matched column '{col_name}' to glossary: {description}")
+                        else:
+                            # Try partial matching (e.g., "posting_date" matches "POSTINGDATE")
+                            col_normalized = col_name_lower.replace('_', '').replace(' ', '')
+                            for glossary_key, glossary_data in glossary_lookup.items():
+                                glossary_normalized = glossary_key.replace('_', '').replace(' ', '')
+                                if col_normalized == glossary_normalized:
+                                    description = glossary_data['description']
+                                    metadata['column_descriptions'][col_name] = description
+                                    logger.debug(f"Matched column '{col_name}' to glossary entry '{glossary_key}': {description}")
+                                    break
+                    
+                    if metadata['column_descriptions']:
+                        logger.info(f"Loaded {len(metadata['column_descriptions'])} field descriptions for table {table_name}")
+                    else:
+                        logger.warning(f"No matching descriptions found in glossary for table {table_name}")
+                else:
+                    logger.warning("connection_glossary table not found - semantic matching disabled")
+                    
+            except Exception as e:
+                logger.warning(f"Could not fetch descriptions from connection_glossary: {e}")
+                logger.warning("Continuing without descriptions - system will use exact column name matching only")
+            
+            # Populate column info and sample data (original logic)
+            for col in columns:
+                col_name = col[1]
+                col_type = col[2]
+                metadata['columns'].append(col_name)
+                metadata['column_types'][col_name] = col_type
+                
+                cursor.execute(f"SELECT DISTINCT {col_name} FROM {table_name} LIMIT 10")
+                samples = [row[0] for row in cursor.fetchall() if row[0] is not None]
+                metadata['sample_data'][col_name] = samples
+            
             conn.close()
             
-            if result:
-                return result[0]
+            logger.info(f"Fetched metadata for table {table_name}: {len(metadata['columns'])} columns, "
+                    f"{len(metadata['column_descriptions'])} with descriptions")
+            return metadata
+            
         except Exception as e:
-            logger.warning(f"Error fetching description from glossary for '{column}': {e}")
-    
-    return None
+            logger.error(f"Error fetching table metadata: {e}")
+            raise
 
 
-def get_all_glossary_entries(self) -> Dict[str, str]:
-    """
-    NEW HELPER METHOD: Get all entries from connection_glossary
-    Useful for debugging and seeing what descriptions are available
-    
-    Returns:
-        Dict mapping column_name to column_desc
-    """
-    try:
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+    def _get_column_description(self, column: str, table_name: Optional[str] = None) -> Optional[str]:
+        """
+        Get description for a column if available from loaded metadata
         
-        cursor.execute("""
-            SELECT column_name, column_desc
-            FROM connection_glossary
-            WHERE column_name IS NOT NULL 
-            AND column_desc IS NOT NULL
-        """)
+        Args:
+            column: Column name
+            table_name: Optional table name (defaults to primary table)
+            
+        Returns:
+            Description string or None
+        """
+        # Check in current table metadata first
+        if 'column_descriptions' in self.table_metadata:
+            desc = self.table_metadata['column_descriptions'].get(column)
+            if desc:
+                return desc
+            
+            # Try case-insensitive match
+            column_lower = column.lower()
+            for col_name, col_desc in self.table_metadata['column_descriptions'].items():
+                if col_name.lower() == column_lower:
+                    return col_desc
         
-        entries = cursor.fetchall()
-        conn.close()
+        # If not found and a different table was specified, try to fetch from glossary directly
+        if table_name and table_name != self.table_name:
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                
+                # Try exact match first
+                cursor.execute("""
+                    SELECT column_desc 
+                    FROM connection_glossary 
+                    WHERE LOWER(column_name) = LOWER(?)
+                    LIMIT 1
+                """, (column,))
+                
+                result = cursor.fetchone()
+                conn.close()
+                
+                if result:
+                    return result[0]
+            except Exception as e:
+                logger.warning(f"Error fetching description from glossary for '{column}': {e}")
         
-        return {col_name: col_desc for col_name, col_desc in entries}
-        
-    except Exception as e:
-        logger.error(f"Error fetching glossary entries: {e}")
-        return {}
+        return None
 
 
-def add_glossary_entry(self, column_name: str, column_desc: str) -> bool:
+    def get_all_glossary_entries(self) -> Dict[str, str]:
+        """
+        NEW HELPER METHOD: Get all entries from connection_glossary
+        Useful for debugging and seeing what descriptions are available
+        
+        Returns:
+            Dict mapping column_name to column_desc
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT column_name, column_desc
+                FROM connection_glossary
+                WHERE column_name IS NOT NULL 
+                AND column_desc IS NOT NULL
+            """)
+            
+            entries = cursor.fetchall()
+            conn.close()
+            
+            return {col_name: col_desc for col_name, col_desc in entries}
+            
+        except Exception as e:
+            logger.error(f"Error fetching glossary entries: {e}")
+            return {}
+
+
+    def add_glossary_entry(self, column_name: str, column_desc: str) -> bool:
     """
     NEW HELPER METHOD: Add a new entry to connection_glossary
     
