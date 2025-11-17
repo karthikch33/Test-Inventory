@@ -685,53 +685,44 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
 
 
     def add_glossary_entry(self, column_name: str, column_desc: str) -> bool:
-    """
-    NEW HELPER METHOD: Add a new entry to connection_glossary
     
-    Args:
-        column_name: The column name to add
-        column_desc: The description for the column
-        
-    Returns:
-        True if successful, False otherwise
-    """
-    try:
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        # Check if entry already exists
-        cursor.execute("""
-            SELECT id FROM connection_glossary 
-            WHERE LOWER(column_name) = LOWER(?)
-        """, (column_name,))
-        
-        existing = cursor.fetchone()
-        
-        if existing:
-            # Update existing entry
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Check if entry already exists
             cursor.execute("""
-                UPDATE connection_glossary 
-                SET column_desc = ?
-                WHERE id = ?
-            """, (column_desc, existing[0]))
-            logger.info(f"Updated glossary entry for '{column_name}'")
-        else:
-            # Insert new entry
-            cursor.execute("""
-                INSERT INTO connection_glossary (column_name, column_desc)
-                VALUES (?, ?)
-            """, (column_name, column_desc))
-            logger.info(f"Added new glossary entry for '{column_name}'")
+                SELECT id FROM connection_glossary 
+                WHERE LOWER(column_name) = LOWER(?)
+            """, (column_name,))
+            
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Update existing entry
+                cursor.execute("""
+                    UPDATE connection_glossary 
+                    SET column_desc = ?
+                    WHERE id = ?
+                """, (column_desc, existing[0]))
+                logger.info(f"Updated glossary entry for '{column_name}'")
+            else:
+                # Insert new entry
+                cursor.execute("""
+                    INSERT INTO connection_glossary (column_name, column_desc)
+                    VALUES (?, ?)
+                """, (column_name, column_desc))
+                logger.info(f"Added new glossary entry for '{column_name}'")
+            
+            conn.commit()
+            conn.close()
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error adding glossary entry: {e}")
+            return False
         
-        conn.commit()
-        conn.close()
-        return True
-        
-    except Exception as e:
-        logger.error(f"Error adding glossary entry: {e}")
-        return False
-    
-    # ORIGINAL METHOD - UNCHANGED
+        # ORIGINAL METHOD - UNCHANGED
     def _get_actual_column_values(self, column: str, table_name: Optional[str] = None, limit: int = 50) -> List[str]:
         """Get distinct values from a column"""
         try:
