@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Checkbox, Form, Input, Select, Splitter, Table, Tooltip, message } from "antd";
 import { Option } from "antd/es/mentions";
 import * as XLSX from "xlsx";
-import { getAllFilesByProjectIdSlice, getAllScenarioByFileIdSlice, getScenarioTableSlice } from "../../features/WorkSpace/workSpaceSlice";
+import { getAllFilesByProjectIdSlice, getAllScenarioByFileIdSlice, getErrorColumnsTableSlice, getScenarioTableSlice } from "../../features/WorkSpace/workSpaceSlice";
 import Chat from "./Chat";
 import Meta from "../../utils/Meta";
 
@@ -122,18 +122,29 @@ const WorkSpace = () => {
   })))
   }
 
-  // const handleExportRows = ()=>{
-  //   const data = {
-  //     rows : selectedRows,
-  //     file_id : formik?.values?.selected_file
-  //   }
-  //   dispatch(()=>{
+  const handleExportRows = ()=>{
+    const data = {
+      rows : selectedRows,
+      file_id : formik?.values?.selected_file
+    }
 
-  //   })
-  //   .finally(()=>{
-
-  //   })
-  // }
+    dispatch(getErrorColumnsTableSlice(data))
+    .then((response)=>{
+        if(response?.payload?.status === 200){
+          message?.success('Successfully Moved into Export Table');
+      }
+      else if(response?.payload?.status === 409){
+          message?.error('Conflict');
+      }
+      else{
+          message?.error('Internal Server Error')
+      }
+    })
+    .finally(()=>{
+      // setSpinning(false);
+      // setTip('Loading...')
+    })
+  }
 
   return (
     <div className="w-100 px-2">
@@ -201,7 +212,7 @@ const WorkSpace = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button onClick={handleExcelSheet} style={{ marginLeft: "20px" }}>
+            <Button onClick={handleExportRows} style={{ marginLeft: "20px" }}>
               Export
             </Button>
           </Form.Item>
