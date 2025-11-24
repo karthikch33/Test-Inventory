@@ -126,7 +126,7 @@ const WorkSpace = () => {
     const data = {
       rows : selectedRows,
       file_id : formik?.values?.selected_file,
-      senario_id: scenario_obj?.senerio_id
+      senario_id: formik?.values?.senerio_id
     }
 
     dispatch(getErrorColumnsTableSlice(data))
