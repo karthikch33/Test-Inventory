@@ -1142,7 +1142,203 @@ def get_table_from_sap(request):
 
     create_and_insert_data(request.data['table_name'].upper(), jsonPrimary)
     return Response("Done")
+import re
+from typing import List, Dict, Any
+from django.db import connection, transaction
 
+def table_to_custom_json_for_multiple(table_name):
+    # Get column names
+    with connection.cursor() as cursor:
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns_info = cursor.fetchall()
+    columns = [col[1] for col in columns_info]
+
+    # Fetch all rows into pandas DataFrame
+    query = f"SELECT * FROM {table_name}"
+    df = pd.read_sql_query(query, connection)
+
+    # Function to determine if column should be displayed
+    def should_display(col):
+        # Check if any value in the column is neither null nor empty (after stripping spaces)
+        return int(df[col].dropna().astype(str).str.strip().replace('', None).notnull().any())
+
+    # Build json_columns as list of {key, value, display}
+    json_columns = [{'key': i, 'value': col, 'display': should_display(col)} for i, col in enumerate(columns)]
+
+    # Convert DataFrame rows into dict list
+    json_data = json.loads(df.to_json(orient='records'))
+
+    # Prepare return JSON structure
+    return_json = {
+        "rows": json_data,
+        "columns": json_columns
+    }
+
+    print(columns)  # for debug/logging
+
+    return return_json
+
+def update_table_from_list(table_name: str, mappings: List[Dict[str, Any]]) -> Dict[str, Any]:
+    return_list_tables=[]
+    """
+    Update the 3rd column (Data to Use) for rows whose 2nd column (Step Description)
+    starts with 'Enter' (case-insensitive), by matching the cleaned key against the dicts.
+
+    Args:
+        table_name: database table name (only letters, numbers and underscores allowed).
+        mappings: list of dicts like:
+            [{'PLANT': 'AA1', 'GOODSMOVEMENTTYPE': '262', 'POSTINGDATE': '20240523', 'key': 2}, ...]
+
+    Returns:
+        A summary dict with counts and details of updates performed.
+    """
+
+    # Validate table name (simple allow-list pattern to avoid SQL injection)
+    if not re.match(r'^[A-Za-z0-9_]+$', table_name):
+        raise ValueError("Invalid table name. Only letters, numbers and underscores allowed.")
+
+    # Preprocess mappings: normalize keys to uppercase with no spaces for quick lookup
+    normalized_mappings = []
+    for m in mappings:
+        norm = {}
+        # copy values, uppercase keys (strip spaces)
+        for k, v in m.items():
+            if k == 'key':
+                norm['key'] = v
+            else:
+                norm_key = re.sub(r'\s+', '', str(k)).upper()
+                norm[norm_key] = v
+        normalized_mappings.append(norm)
+
+    summary = {
+        'table': table_name,
+        'rows_scanned': 0,
+        'rows_updated': 0,
+        'details': [],  # list of {row_id, extracted_key, new_value}
+    }
+
+    with connection.cursor() as cur:
+        # Fetch everything to discover column order and current values
+        cur.execute(f"SELECT * FROM {table_name}")
+        rows = cur.fetchall()
+        col_names = [c[0] for c in cur.description]
+
+        if len(col_names) < 3:
+            raise ValueError("Table must have at least 3 columns (step#, step description, data to use).")
+
+        # we assume: first column = row identifier (used in WHERE), second = step description, third = data to use
+        id_col = col_names[0]
+        desc_col = col_names[1]
+        data_col = col_names[2]
+
+        # Precompile regex to match leading "Enter" (case-insensitive) and capture the rest
+        enter_re = re.compile(r'^\s*enter\s+(.+)$', re.IGNORECASE)
+
+        # Iterate rows
+        for row in rows:
+            summary['rows_scanned'] += 1
+            row_id = row[0]
+            step_desc = row[1] if row[1] is not None else ''
+
+            m = enter_re.match(step_desc.strip())
+            if not m:
+                continue
+
+            # Get the phrase after "Enter"
+            after_enter = m.group(1).strip()
+
+            # Remove all inner spaces and non-alphanumeric characters, uppercase to create the key
+            # (keeps letters & digits)
+            cleaned_key = re.sub(r'[^A-Za-z0-9]', '', after_enter).upper()
+
+            if not cleaned_key:
+                continue
+
+            # Search normalized mappings for this key; prefer mappings whose 'key' field matches row id if present
+            selected_value = None
+            # First pass: find mapping where mapping has 'key' and equals row_id
+            for nm in normalized_mappings:
+                if nm.get('key') is not None and nm.get('key') == row_id and cleaned_key in nm:
+                    selected_value = nm[cleaned_key]
+                    break
+            # Second pass: find any mapping that contains the key (regardless of 'key' field)
+            if selected_value is None:
+                for nm in normalized_mappings:
+                    if cleaned_key in nm:
+                        selected_value = nm[cleaned_key]
+                        break
+
+            if selected_value is None:
+                # nothing to update for this row
+                continue
+
+            # Perform the update (parameterized)
+            with transaction.atomic():
+                # safe: table and column names validated earlier for table; column names come from DB description
+                update_sql = f'UPDATE {table_name} SET "{data_col}" = %s WHERE "{id_col}" = %s'
+                cur.execute(update_sql, [selected_value, row_id])
+                json_da = table_to_custom_json_for_multiple(table_name)
+                return_list_tables.append(json_da)
+
+            summary['rows_updated'] += 1
+            summary['details'].append({
+                'row_id': row_id,
+                'extracted_key': cleaned_key,
+                'new_value': selected_value,
+            })
+    print("updated rows",summary['rows_updated'])        
+    print("AS lwnght",len(return_list_tables))        
+    return return_list_tables
+
+
+from openpyxl import Workbook
+from django.http import HttpResponse
+import json
+
+@api_view(['POST'])
+def create_error_records(request, senerio_id):
+    return_tables = []
+    print("request len", len(request.data['rows']))
+    print(request.data)
+    senerio_id = request.data['senario_id']
+    try:
+        senerio = Senerios.objects.get(pk=senerio_id)
+        table_name = senerio.senerio_table_name
+    except Senerios.DoesNotExist:
+        return Response("None")
+    
+    for jj in request.data['rows']:
+        update_table_from_list(table_name, [jj])
+        sing_tab = table_to_custom_json_for_multiple(table_name)
+        return_tables.append(sing_tab)
+    print(return_tables)
+    # # Create Excel workbook with multiple sheets
+    # wb = Workbook()
+    # wb.remove(wb.active)  # Remove default sheet
+    
+    # for idx, table_data in enumerate(return_tables):
+    #     sheet_name = f"Sheet_{idx + 1}"
+    #     ws = wb.create_sheet(title=sheet_name)
+        
+    #     # Write column headers
+    #     columns = table_data['columns']
+    #     for col_idx, col_info in enumerate(columns, start=1):
+    #         ws.cell(row=1, column=col_idx, value=col_info['value'])
+        
+    #     # Write row data
+    #     rows = table_data['rows']
+    #     for row_idx, row_data in enumerate(rows, start=2):
+    #         for col_idx, col_info in enumerate(columns, start=1):
+    #             cell_value = row_data.get(col_info['value'], '')
+    #             ws.cell(row=row_idx, column=col_idx, value=cell_value)
+    
+    # # Return as downloadable file
+    # response = HttpResponse(
+    #     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    # )
+    # response['Content-Disposition'] = 'attachment; filename="tables_export.xlsx"'
+    # wb.save(r"C:\\Users\\gajananda.mallidi\\Downloads\\tables_export.xlsx")
+    return JsonResponse(return_tables,safe=False)
 
 @api_view(['POST'])
 def process_select_query(request, file_id):
