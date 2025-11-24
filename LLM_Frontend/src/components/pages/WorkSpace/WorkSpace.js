@@ -132,7 +132,56 @@ const WorkSpace = () => {
     dispatch(getErrorColumnsTableSlice(data))
     .then((response)=>{
         if(response?.payload?.status === 200){
-          message?.success('Successfully Moved into Export Table');
+         const sheets = response.payload.data;
+         console.log(sheets)
+
+         if (!Array.isArray(sheets) || sheets.length === 0) {
+          message.error('No sheets returned for export');
+          setLoading(false);
+          return;
+        }
+
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+
+        sheets.forEach((sheetObj, index) => {
+          const columns = Array.isArray(sheetObj.columns) ? sheetObj.columns : [];
+          const rows = Array.isArray(sheetObj.rows) ? sheetObj.rows : [];
+
+          // Columns may have shape { key: 0, value: 'Test Step #', display: 1 }
+          const headers = columns.map(col => col.value ?? `Col${col.key ?? ''}`);
+
+          // Build array-of-arrays (AOA) so we keep header order
+          const aoa = [];
+          aoa.push(headers);
+
+          rows.forEach(rowObj => {
+            // For each header, fetch the matching value from row object (row keys look like header text)
+            const rowArr = headers.map(header => {
+              // handle null/undefined
+              const raw = rowObj?.[header];
+              // Optionally format dates / numbers here
+              return raw == null ? '' : raw;
+            });
+            aoa.push(rowArr);
+          });
+
+          // Convert AOA to worksheet
+          const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+          // Choose a sheet name if provided otherwise default
+          const sheetName = sheetObj.sheetName || `Sheet${index + 1}`;
+          // Excel sheet name max length 31
+          XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0, 31));
+        });
+
+        // Create filename with timestamp
+        const filename = `export_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.xlsx`;
+
+        // Trigger download in browser
+        XLSX.writeFile(wb, filename);
+
+        message.success('Download started');
       }
       else if(response?.payload?.status === 409){
           message?.error('Conflict');
