@@ -125,7 +125,8 @@ const WorkSpace = () => {
   const handleExportRows = ()=>{
     const data = {
       rows : selectedRows,
-      file_id : formik?.values?.selected_file
+      file_id : formik?.values?.selected_file,
+      senario_id: scenario_obj?.senerio_id
     }
 
     dispatch(getErrorColumnsTableSlice(data))
