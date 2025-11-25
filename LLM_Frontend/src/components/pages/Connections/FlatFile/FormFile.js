@@ -129,10 +129,10 @@ const FormFile = ({handleOk,loadFile}) => {
     }
 
     const handleFileChangeExcel = (event)=>{
-        setLoading(true);
         const file = event?.target?.files[0];
         if (file) {
             if(file?.name?.split('.').pop() === 'xls' || file?.name?.split('.').pop() === 'xlsx'){
+                setLoading(true);
                 const fileName = file?.name
                 formik?.setFieldValue('uploaded_fileName',fileName);
                 setFile(file);
@@ -143,9 +143,15 @@ const FormFile = ({handleOk,loadFile}) => {
                 .then((response)=>{
                     // here error must be handle
                     console.log(response)
-                    setSheets(response?.payload?.data);
-                    const sheets = response?.payload?.data;
-                    formik.setFieldValue('selected_sheet',sheets);
+                    if(response?.payload?.status === 200)
+                    {
+                        setSheets(response?.payload?.data);
+                        const sheets = response?.payload?.data;
+                        formik.setFieldValue('selected_sheet',sheets);
+                    }
+                    else{
+                        message?.error(response?.payload?.message || 'Internal Server Error')
+                    }
                 })
                 .finally(()=>{
                     setLoading(false);
@@ -158,6 +164,7 @@ const FormFile = ({handleOk,loadFile}) => {
         else 
         {
             message?.error('File Not Attached');
+            setLoading(false);
         }
     }
 
