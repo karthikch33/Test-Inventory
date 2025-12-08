@@ -652,3 +652,96 @@ query_fixer: |
   - If error mentions JOIN, verify ON clause exists and uses valid columns
 
   Fix the query and return ONLY the corrected SQL query, no explanations or markdown formatting.
+test_script_generator: |
+  Generate a SAP test script table in JSON format based on the user's requirements.
+
+  User Request: {user_request}
+
+  CRITICAL INSTRUCTIONS:
+  1. Return ONLY a JSON object - no data lookup needed, use realistic dummy values
+  2. Generate test steps that follow SAP testing best practices
+  3. Match the exact column structure requested by the user
+  4. Include realistic SAP-specific details (transaction codes, field names, etc.)
+  5. Make the scenario end-to-end and comprehensive
+  
+  REQUIRED JSON STRUCTURE:
+  {{
+      "test_script": {{
+          "scenario": "Brief description of the test scenario",
+          "module": "SAP module name (e.g., MM, SD, WM, etc.)",
+          "columns": ["Test Step #", "Test Description", "Step Description", "Data to Use", "Expected Result"],
+          "steps": [
+              {{
+                  "Test Step #": "1",
+                  "Test Description": "Description of what this test covers",
+                  "Step Description": "Detailed action to perform",
+                  "Data to Use": "Specific data, transaction codes, or values",
+                  "Expected Result": "What should happen after this step"
+              }}
+          ]
+      }}
+  }}
+
+  GENERATION RULES:
+
+  1. COLUMN NAMING:
+     - Use EXACT column names as specified by user
+     - Common variations: "Test Step #", "Step #", "Test Step Number"
+     - Respect user's preference for column headers
+
+  2. STEP NUMBERING:
+     - Start from 1
+     - Sequential numbering
+     - Include pre-requisites as separate steps when needed
+
+  3. TEST DESCRIPTION:
+     - First step should describe the overall scenario
+     - Include pre-requisites when applicable
+     - Be specific about the business process being tested
+
+  4. STEP DESCRIPTION:
+     - Use SAP terminology (transaction codes, menu paths, field names)
+     - Be specific and actionable
+     - Include navigation details (e.g., "Enter transaction code 'MIGO'")
+     - Mention specific fields to populate
+
+  5. DATA TO USE:
+     - Use realistic SAP values:
+       * Transaction codes (MB51, MIGO, VL01N, etc.)
+       * Material numbers (10-digit format)
+       * Plant codes (4-digit format)
+       * Movement types (3-digit codes like 101, 311, 901)
+       * Storage locations (4-character codes)
+     - Specify when user input is needed vs. pre-populated values
+
+  6. EXPECTED RESULT:
+     - Describe the system behavior after each action
+     - Include what should be visible on screen
+     - Mention field values to verify
+     - Note any documents or numbers that should be generated
+
+  7. SAP-SPECIFIC BEST PRACTICES:
+     - Always include logon step as first step
+     - Include pre-requisite checks when applicable
+     - Use proper SAP transaction codes
+     - Include verification steps (double-click to view details, check field values)
+     - End with validation of expected outcomes
+
+  DUMMY DATA GUIDELINES:
+  - Material numbers: 10-digit format (e.g., 10059027004)
+  - Plant codes: 4-digit format (e.g., 3000, 1000)
+  - Storage locations: 4-character (e.g., 0001, 0005, FG01)
+  - Movement types:
+    * 101: GR for PO
+    * 261: Goods issue
+    * 311: Transfer posting
+    * 901: Goods receipt from consumer
+    * 551: Withdrawal from storage
+  - Document numbers: 10-digit format
+  - Status codes: Active, Blocked, Quality, etc.
+  - Stock types: 0 (Unrestricted), 1 (Quality), 2 (Blocked)
+  
+  RETURN FORMAT:
+  Return ONLY a valid JSON object following the structure defined above.
+  DO NOT include any markdown formatting, explanations, or code blocks.
+  The response must be parseable by json.loads() directly.
