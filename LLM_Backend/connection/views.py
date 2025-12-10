@@ -279,7 +279,7 @@ def read_excel_and_return_json(request):
             return Response({"error": "Required columns missing in Excel sheet"}, status=400)
         desc_col_name = next(col for col in df.columns if col.lower() == "scenario description".lower())
         desc_map = {i+1: desc for i, desc in enumerate(df[desc_col_name].astype(str).tolist())}
-
+        print(df.head(5))
         return Response(desc_map)
 
     except Exception as e:
@@ -319,31 +319,46 @@ def create_file(request):
                 i = "t_"+str(project_id)+"_"+str(file_id)+"_"+i
                 
                 table_names.append(i)
+            print("debugger 1")    
+            print(sheet_desc)
+            print(table_names)
             for i in range(len(sheet_desc)):
-                skiprows=15
-                skipcols=1
-                df = pd.read_excel(file, sheet_name=sheet_inds[i], skiprows=skiprows, usecols=lambda c: True)
-                df = df.iloc[:, skipcols:]
-                Senerio_desc = df['Test Description'][0]
-                df = df.drop(columns=['Test Description'])
-                df.to_excel('output.xlsx', index=False)
-                
-                senerios_data = {
-                    "project_id" : request.data.get("project_id"),
-                    "file_id" : serializer.instance.file_id,
-                    "senerio_name" : sheet_desc[i],
-                    "senerio_description" : Senerio_desc,
-                    "senerio_table_name" : table_names[i]
-                }
-                print(senerios_data)
-                serializer1 = SeneriosSerializer(data=senerios_data)
-                if serializer1.is_valid():
-                    serializer1.save()
-                    df.to_sql(table_names[i], connection.connection, if_exists='replace', index=False)
+                try:
+                    skiprows=15
+                    skipcols=1
+                    df = pd.read_excel(file, sheet_name=sheet_inds[i], skiprows=skiprows, usecols=lambda c: True)
+                    df = df.iloc[:, skipcols:]
+                    print(df.head(5))
+                    try:
+                        Senerio_desc = df['Test Description'][0]
+                        df = df.drop(columns=['Test Description'])
+                    except:
+                        Senerio_desc = df['Test Step Description'][0] 
+                        df = df.drop(columns=['Test Step Description'])
+
+                    
+                    # df.to_excel('output.xlsx', index=False)
+                    
+                    senerios_data = {
+                        "project_id" : request.data.get("project_id"),
+                        "file_id" : serializer.instance.file_id,
+                        "senerio_name" : sheet_desc[i],
+                        "senerio_description" : Senerio_desc,
+                        "senerio_table_name" : table_names[i]
+                    }
+                    print("hii",senerios_data)
+                    serializer1 = SeneriosSerializer(data=senerios_data)
+
+                    if serializer1.is_valid():
+                        serializer1.save()
+                        print("came in")
+                        df.to_sql(table_names[i], connection.connection, if_exists='replace', index=False)
+                except Exception as e:
+                    print(e)        
         return Response("Done")            
     except Exception as e:
         print(e)
-        return Response("error")
+        return Response(str(e))
     
 
 

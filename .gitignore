@@ -191,3 +191,9 @@ LLM_Backend/connection/migrations/0002_connection_sample_del.py
 LLM_Backend/connection/migrations/*
 LLM_Backend/db.zip
 LLM_Backend/Z52_MATDOC_data.xlsx
+LLM_Backend/data1.xlsx
+LLM_Backend/data2.xlsx
+LLM_Backend/data3.xlsx
+LLM_Backend/data4.xlsx
+LLM_Backend/data5.xlsx
+LLM_Backend/data6.xlsx

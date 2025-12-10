@@ -146,7 +146,7 @@ const MainScreen = () =>
           <Header style={{ padding: 0,maxHeight:"50px" }} className='d-flex justify-content-between ps-3 pe-5'>  
           <div style={{ display: 'flex', alignItems: 'center', justifyContent:'space-between',width:"100%" }}>
             <div>
-              <img src='https://mma.prnewswire.com/media/844530/YASH_Technologies_Logo.jpg?p=publish' className='rounded-circle' alt='logo' style={{width:'45px', height:"45px"}}/>
+              <img src='https://etimg.etb2bimg.com/photo/117021568.cms' className='rounded-circle' alt='logo' style={{width:'45px', height:"45px",}}/>
             <Button  
             type="text"  
             icon={collapsed ? <GiHamburgerMenu /> : <GiHamburgerMenu />}  
