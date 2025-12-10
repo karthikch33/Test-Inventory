@@ -1307,6 +1307,9 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
         ENHANCED: Now leverages description-based semantic field identification
         """
         logger.info(f"Processing query: {user_query}")
+        if self._is_test_script_request(user_query):
+            logger.info("Routing to test script generator")
+            return self._generate_test_script(user_query)
         
         plan = self._understand_query(user_query)
         if not plan:
@@ -1382,3 +1385,119 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
             'last_query': sql_query,
             'plan': validated_plan
         }
+    def _is_test_script_request(self, user_query: str) -> bool:
+        """
+        Detect if the user is requesting a test script/table generation
+        """
+        query_lower = user_query.lower()
+        
+        test_keywords = [
+            'test script',
+            'test case',
+            'test scenario',
+            'testing table',
+            'test table',
+            'generate test',
+            'create test',
+            'test steps',
+            'give me a table',
+            'generate table',
+            'create table',
+            'table for',
+            'requirement table',
+            'scenario table'
+        ]
+        
+        for keyword in test_keywords:
+            if keyword in query_lower:
+                logger.info(f"Detected test script request with keyword: '{keyword}'")
+                return True
+        
+        test_patterns = [
+            r'give.*table.*for',
+            r'generate.*test.*table',
+            r'create.*test.*script',
+            r'table.*requirement',
+            r'test.*for.*sap',
+            r'scenario.*table'
+        ]
+        
+        for pattern in test_patterns:
+            if re.search(pattern, query_lower):
+                logger.info(f"Detected test script request with pattern: '{pattern}'")
+                return True
+        
+        return False
+
+
+    def _generate_test_script(self, user_query: str) -> Dict[str, Any]:
+        """
+        Generate test script/table JSON based on user requirements
+        NO DATABASE ACCESS - pure LLM generation with dummy data
+        """
+        logger.info(f"Generating test script for: {user_query}")
+        
+        if 'test_script_generator' not in self.prompts:
+            logger.error("test_script_generator prompt not found in prompts.yml")
+            return {
+                'success': False,
+                'error': 'Test script generator prompt not configured. Please update prompts.yml',
+                'results': None
+            }
+        
+        prompt = self.prompts['test_script_generator'].format(
+            user_request=user_query
+        )
+        
+        response = self.llm.generate(prompt)
+        
+        if not response:
+            logger.error("Failed to get response from LLM for test script generation")
+            return {
+                'success': False,
+                'error': 'Failed to generate test script from LLM',
+                'results': None
+            }
+        
+        try:
+            response_clean = response.strip()
+            
+            if response_clean.startswith('```json'):
+                response_clean = response_clean[7:]
+            elif response_clean.startswith('```'):
+                response_clean = response_clean[3:]
+            
+            if response_clean.endswith('```'):
+                response_clean = response_clean[:-3]
+            
+            response_clean = response_clean.strip()
+            
+            test_script_data = json.loads(response_clean)
+            
+            logger.info(f"Successfully generated test script with {len(test_script_data.get('test_script', {}).get('steps', []))} steps")
+            
+            return {
+                'success': True,
+                'type': 'test_script',
+                'test_script': test_script_data,
+                'query': user_query
+            }
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse test script JSON: {e}")
+            logger.error(f"Response was: {response[:500]}")
+            
+            return {
+                'success': False,
+                'error': f'Failed to parse test script JSON: {str(e)}',
+                'raw_response': response[:1000],
+                'results': None
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error generating test script: {e}")
+            return {
+                'success': False,
+                'error': f'Unexpected error: {str(e)}',
+                'results': None
+            }
+            

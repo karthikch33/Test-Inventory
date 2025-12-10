@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getFileSlice, uploadCsvSheetSlice, uploadExcelSheetSlice, uploadExcelSlice, uploadTxtSheetSlice } from '../../../features/Connections/fileSlice';
 import { CustomSelectCheckbox, CustomSelectFileType, CustomSelectFormType, CustomSelectProject, CustomSelectSheet } from '../../CustomSelect';
 import { extractFirstColumnSlice } from '../../../features/Connections/connectionSlice';
+import CustomInput from '../../CustomInput';
  
 const FormFile = ({handleOk,loadFile}) => {
     const [allProjects, setAllProjects] = useState([]);
@@ -29,6 +30,7 @@ const FormFile = ({handleOk,loadFile}) => {
         project_id: yup.string().required('Project Selection Required'),     
         file_type: yup.string().required('File Type Selection Required'),  
         form_type : yup.string().required('Form Type Selection Required'),
+        cds_name : yup.string().required('CDS View Name is Required')
     });  
  
     const formik = useFormik({  
@@ -39,7 +41,8 @@ const FormFile = ({handleOk,loadFile}) => {
                 file_status : '',
                 project_name:'',
                 uploaded_fileName:'',
-                selected_sheet: ''
+                selected_sheet: '',
+                cds_name : ''
             },
             validationSchema : schema,
             onSubmit : (values)=>{
@@ -63,6 +66,7 @@ const FormFile = ({handleOk,loadFile}) => {
         formData?.append('file_name', formik?.values?.uploaded_fileName);
         formData?.append('file', file);
         formData?.append('primary_keys',trimedData);
+        formData?.append('cds_name', formik?.values?.cds_name)
         
         dispatch(uploadExcelSheetSlice(formData))
         .then((response)=>{
@@ -129,10 +133,10 @@ const FormFile = ({handleOk,loadFile}) => {
     }
 
     const handleFileChangeExcel = (event)=>{
-        setLoading(true);
         const file = event?.target?.files[0];
         if (file) {
             if(file?.name?.split('.').pop() === 'xls' || file?.name?.split('.').pop() === 'xlsx'){
+                setLoading(true);
                 const fileName = file?.name
                 formik?.setFieldValue('uploaded_fileName',fileName);
                 setFile(file);
@@ -143,9 +147,15 @@ const FormFile = ({handleOk,loadFile}) => {
                 .then((response)=>{
                     // here error must be handle
                     console.log(response)
-                    setSheets(response?.payload?.data);
-                    const sheets = response?.payload?.data;
-                    formik.setFieldValue('selected_sheet',sheets);
+                    if(response?.payload?.status === 200)
+                    {
+                        setSheets(response?.payload?.data);
+                        const sheets = response?.payload?.data;
+                        formik.setFieldValue('selected_sheet',sheets);
+                    }
+                    else{
+                        message?.error(response?.payload?.message || 'Internal Server Error')
+                    }
                 })
                 .finally(()=>{
                     setLoading(false);
@@ -158,6 +168,7 @@ const FormFile = ({handleOk,loadFile}) => {
         else 
         {
             message?.error('File Not Attached');
+            setLoading(false);
         }
     }
 
@@ -238,6 +249,11 @@ const FormFile = ({handleOk,loadFile}) => {
        { formik?.values?.form_type === 'File' && <form onSubmit={formik.handleSubmit} style={{ maxWidth: '600px', margin: '0 auto' }}>
         <CustomSelectProject  touched={formik?.touched?.project_id} error={formik?.errors?.project_id} 
         value={formik?.values?.project_id} handleChange={handleProjectChange} disabled={false} projects={allProjects}/>
+
+{/* {label,type,name,value,handleChange,blur,disabled,touched,error,placeholder} */}
+
+        <CustomInput label={"CDS View Name"} name="cds_name" value={formik?.values?.cds_name} 
+        handleChange={formik?.handleChange} handleBlur={formik?.handleBlur} touched={formik?.touched?.cds_name} error={formik?.errors?.cds_name}/>
 
         {/* <CustomRadioFileStatus value={formik.values.file_status} handleChange={handleFileStatus}
         touched={formik?.touched?.file_status} error={formik?.errors?.file_status}/> */}
