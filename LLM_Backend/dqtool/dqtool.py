@@ -1480,7 +1480,8 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
                 'success': True,
                 'type': 'test_script',
                 'test_script': test_script_data,
-                'query': user_query
+                'query': user_query,
+                'sql_query': None
             }
             
         except json.JSONDecodeError as e:
@@ -1492,6 +1493,7 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
                 'error': f'Failed to parse test script JSON: {str(e)}',
                 'raw_response': response[:1000],
                 'results': None
+                
             }
         except Exception as e:
             logger.error(f"Unexpected error generating test script: {e}")
