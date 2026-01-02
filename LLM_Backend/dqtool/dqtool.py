@@ -1474,14 +1474,19 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
             
             test_script_data = json.loads(response_clean)
             
-            logger.info(f"Successfully generated test script with {len(test_script_data.get('test_script', {}).get('steps', []))} steps")
+            # --- START CHANGE ---
+            # Extract the steps list to pass as 'results'
+            steps = test_script_data.get('test_script', {}).get('steps', [])
+            
+            logger.info(f"Successfully generated test script with {len(steps)} steps")
             
             return {
                 'success': True,
                 'type': 'test_script',
                 'test_script': test_script_data,
                 'query': user_query,
-                'sql_query': None
+                'sql_query': None,
+                'results': steps 
             }
             
         except json.JSONDecodeError as e:
@@ -1493,7 +1498,6 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
                 'error': f'Failed to parse test script JSON: {str(e)}',
                 'raw_response': response[:1000],
                 'results': None
-                
             }
         except Exception as e:
             logger.error(f"Unexpected error generating test script: {e}")
@@ -1502,4 +1506,4 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
                 'error': f'Unexpected error: {str(e)}',
                 'results': None
             }
-            
+ 
