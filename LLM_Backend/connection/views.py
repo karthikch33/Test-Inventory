@@ -290,6 +290,7 @@ def read_excel_and_return_json(request):
 def create_file(request):
     try:
         file=request.FILES.get('file')
+        print(request.data) 
         ind_desc = request.data.getlist("primary_keys", [])
         ind_desc = ind_desc[0].split(",")
         print(ind_desc)
@@ -305,8 +306,9 @@ def create_file(request):
         file_data = {
             "project_id": request.data.get("project_id"),
             "file_name": request.data.get("file_name"),
+            "cds_name": request.data.get("cds_name"),
         }
-
+        
         serializer = FileSerializer(data=file_data) 
         if serializer.is_valid():
             serializer.save()
@@ -317,7 +319,7 @@ def create_file(request):
                 i = i.strip()
                 i = TableName_Modification(i)
                 i = "t_"+str(project_id)+"_"+str(file_id)+"_"+i
-                
+
                 table_names.append(i)
             print("debugger 1")    
             print(sheet_desc)
@@ -1361,7 +1363,12 @@ def process_select_query(request, file_id):
         file_id = int(file_id)
     except ValueError:
         return Response({"error": "file_id must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-    table_name = "Z52_MATDOC"
+    # based on file_id, get table_name
+    try:
+        file = File.objects.get(pk=file_id)
+        table_name = file.cds_name.upper()
+    except File.DoesNotExist:
+        return Response({"error": "File not found."}, status=status.HTTP_404_NOT_FOUND)
     # if(table_name):table_name+="_copy"
     dq = DQTool(table_name=table_name)
     result = dq.process_query(request.data['prompt'])

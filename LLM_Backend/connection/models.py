@@ -65,6 +65,7 @@ class File(models.Model):
         related_name='files'
     )
     file_name = models.TextField()
+    cds_name = models.TextField(blank=False)
     created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -91,6 +92,7 @@ class Senerios(models.Model):
     senerio_description = models.TextField(blank=True, null=True)
     senerio_table_name = models.TextField(blank=True, null=True)
     created_time = models.DateTimeField(auto_now_add=True)
+    
 
     class Meta:
         unique_together = ('project_id', 'file_id', 'senerio_name')

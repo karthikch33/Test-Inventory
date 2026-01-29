@@ -30,7 +30,7 @@ const FormFile = ({handleOk,loadFile}) => {
         project_id: yup.string().required('Project Selection Required'),     
         file_type: yup.string().required('File Type Selection Required'),  
         form_type : yup.string().required('Form Type Selection Required'),
-        cds_name : yup.string().required('CDS View Name is Required')
+        cds_name : yup.string().required('Source is Required')
     });  
  
     const formik = useFormik({  
@@ -252,7 +252,7 @@ const FormFile = ({handleOk,loadFile}) => {
 
 {/* {label,type,name,value,handleChange,blur,disabled,touched,error,placeholder} */}
 
-        <CustomInput label={"CDS View Name"} name="cds_name" value={formik?.values?.cds_name} 
+        <CustomInput label={"Source"} name="cds_name" value={formik?.values?.cds_name} 
         handleChange={formik?.handleChange} handleBlur={formik?.handleBlur} touched={formik?.touched?.cds_name} error={formik?.errors?.cds_name}/>
 
         {/* <CustomRadioFileStatus value={formik.values.file_status} handleChange={handleFileStatus}

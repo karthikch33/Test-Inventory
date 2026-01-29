@@ -1430,7 +1430,7 @@ SIMPLER APPROACH: Direct column_name → column_desc mapping
         return False
 
 
-   def _generate_test_script(self, user_query: str) -> Dict[str, Any]:
+    def _generate_test_script(self, user_query: str) -> Dict[str, Any]:
         """
         Generate test script/table JSON based on user requirements
         NO DATABASE ACCESS - pure LLM generation with dummy data

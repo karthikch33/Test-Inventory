@@ -1,8 +1,10 @@
 import axios from 'axios'
+import urls from '../../utils/base_url';
 
 const getFileService = async ()=>{
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/files/');
+        // const response = await axios.get('http://127.0.0.1:8000/api/files/');
+        const response = await axios.get(`${urls.url}api/files/`);
         return response;
     } catch (error) {
         return error;
@@ -11,7 +13,7 @@ const getFileService = async ()=>{
 
 const deleteFileService = async (data)=>{
     try {
-        const response = await axios.delete(`http://127.0.0.1:8000/api/files/${data?.file_id}/delete/`);
+        const response = await axios.delete(`${urls.url}api/files/${data?.file_id}/delete/`);
         return response;
     } catch (error) {
         return error;
@@ -20,7 +22,7 @@ const deleteFileService = async (data)=>{
 
 const renameFileService = async (data)=>{
     try {
-        const response = await axios.put(`http://127.0.0.1:8000/api/frename/${data?.re_val}/${data?.project_id}/${data?.file_name}/`,data);
+        const response = await axios.put(`${urls.url}api/frename/${data?.re_val}/${data?.project_id}/${data?.file_name}/`,data);
         return response;
     } catch (error) {
         return error;
@@ -29,7 +31,7 @@ const renameFileService = async (data)=>{
 
 const uploadExcelSheetService = async (formData)=>{
     try {
-        const response = await axios.post("http://127.0.0.1:8000/api/files/create/", formData,{
+        const response = await axios.post(  `${urls.url}api/files/create/`, formData,{
             headers :{
                 'Content-Type' : 'multipart/form-data'
             }
@@ -42,7 +44,7 @@ const uploadExcelSheetService = async (formData)=>{
 
 const uploadCsvSheetService = async (formData)=>{
     try {
-        const response = await axios.post("http://127.0.0.1:8000/csv/",formData,{
+        const response = await axios.post(`${urls.url}csv/`,formData,{
             headers:{
                 'Content-Type' : 'multipart/form-data'
             }
@@ -68,7 +70,7 @@ const uploadTxtSheetService = async (formData)=>{
 
 const uploadExcelService = async(formData)=>{
     try {
-        const response = await axios.post('http://127.0.0.1:8000/api/read_excel_and_return_json/',formData,{
+        const response = await axios.post(  `${urls.url}api/read_excel_and_return_json/`,formData,{
             headers:{
                 'Content-Type' :'multipart/form-data'
             }

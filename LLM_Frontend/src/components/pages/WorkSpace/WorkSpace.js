@@ -86,6 +86,8 @@ const WorkSpace = () => {
     dispatch(getScenarioTableSlice(data))
       .then((response) => {
         if (response?.payload?.status === 200) {
+          console.log(response);
+          
           setTableData(response?.payload?.data?.rows || []);
           setFields(response?.payload?.data?.columns || []);
         }
@@ -193,6 +195,7 @@ const WorkSpace = () => {
     .finally(()=>{
       // setSpinning(false);
       // setTip('Loading...')
+      setSelectedRows([]);
     })
   }
 

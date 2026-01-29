@@ -12,11 +12,11 @@ const excelfileUrl = 'http://127.0.0.1:8000/excel/'
 
 
 
-// // const url = ''
-// // const excelUrl = ''
-// // const csvUrl = ''
-// // const txtUrl = ''
-// // const excelfileUrl = ''
+// const url = 'https://test-inventory-backend.cfapps.us10-001.hana.ondemand.com/'
+// const excelUrl = 'https://test-inventory-backend.cfapps.us10-001.hana.ondemand.com/xls/'
+// const csvUrl = 'https://test-inventory-backend.cfapps.us10-001.hana.ondemand.com/csv/'
+// const txtUrl = 'https://test-inventory-backend.cfapps.us10-001.hana.ondemand.com/txt/'
+// const excelfileUrl = 'https://test-inventory-backend.cfapps.us10-001.hana.ondemand.com/excel/'
 
 const urls={
     url,
