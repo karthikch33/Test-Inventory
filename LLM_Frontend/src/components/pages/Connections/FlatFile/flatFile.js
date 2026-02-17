@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';  
-import { Input, Table, Button, Radio, message} from 'antd';  
-import { Link } from 'react-router-dom'; 
+import { Input, Table, Button, Radio, message, Space, Tooltip} from 'antd';  
 import {useFormik} from 'formik'
 import * as yup from 'yup'
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteFileSlice, getFileSlice, renameFileSlice } from '../../../features/Connections/fileSlice';
 import { CustomSelectManageProjects } from '../../CustomSelect';
+import { RiDeleteBinLine } from "react-icons/ri";
 import  { CustomCreateFormFileModal, CustomDeleteModal, CustomRenameModal } from '../../CustomModal';
 import Meta from '../../../utils/Meta';
 const FlatFile = () => {  
@@ -14,8 +14,6 @@ const FlatFile = () => {
  
     const [allProjects, setAllProjects] = useState([]);
     const [messageApi, contextHolder] = message.useMessage();
-    const [selectedKey, setSelectedKey] = useState(null);
-    const [alertActive,setAlertActive] = useState(true);
     const [filesData,setFilesData] = useState([]);
     const [partialFilesData,setPartialFilesData] = useState([]);
     const [selectProjectId,setSelectedProjectId] = useState(0);
@@ -77,23 +75,59 @@ const FlatFile = () => {
  
     const columns = [  
         {  
-            title: 'Select',  
-            dataIndex: 'selecteditem',  
-            render: (text, record) =>   {
-                return (<div style={{display:'flex',justifyContent:'center'}}>
-                <Radio  
-                    checked={selectedKey === record?.file_id}  
-                    onChange={() => handleRadioChange(record)}  
-                />  
-                </div>)
-            }
-        },  
-        {  
             title: 'File Name',  
             dataIndex: 'file_name',  
             key: 'file_name',  
+        },
+        {
+            title : 'CDS Name',
+            dataIndex : 'cds_name',
+            key : 'cds_name'
+        },
+        {
+            title : 'Uploaded On',
+            dataIndex : 'created_at',
+            key : 'created_at'
+        },
+        {
+            title : 'Uploaded By',
+            dataIndex : 'created_by',
+            key : 'created_by'
+        },
+        {
+            title : 'Actions',
+            key : 'actions',
+            render : (_, record) => (
+                <Space className="justify-content-center">
+                    <Tooltip title="Delete">
+                        <Button
+                            type="text"
+                            danger
+                            icon={<RiDeleteBinLine className='fs-5' />}
+                            onClick={() => handleActionDelete(record)}
+                        />
+                    </Tooltip>
+                </Space>
+            )
         }
     ];
+
+    const handleActionDelete = (record)=>{
+        setOpenDeleteModal(true);
+        setSelectedRecord(record);
+    }
+
+    const formatDateString = (isoDate) => {
+        const date = new Date(isoDate);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    }
 
     const loadFiles = (response)=>{
         const updatedColumnsData = []
@@ -103,12 +137,14 @@ const FlatFile = () => {
         loadedFiles?.forEach((field,i)=>{
             updatedColumnsData?.push({
                 file_id : field?.file_id, // ask id from backend
-                file_type : field?.file_type,
                 file_name : field?.file_name,
-                sheet_name : field?.sheet_name,
-                project_id : field?.project_id
+                project_id : field?.project_id,
+                cds_name :field?.cds_name,
+                created_at : formatDateString(field?.created_time),
+                created_by : 'aditya'
             })
         })
+
         
         let filteredProjects
         if(selectProjectId)
@@ -151,11 +187,6 @@ const FlatFile = () => {
         }
     }
 
-    const handleRadioChange = (record) => {  
-        setSelectedKey(record?.file_id);
-        setSelectedRecord(record);
-    }; 
-
     const handleProjectSelect = (e)=>{
         setSelectedProjectId(Number(e));
         if(e)
@@ -165,7 +196,6 @@ const FlatFile = () => {
             setFilesData(filteredProjects);
         }
         else setFilesData(partialFilesData);
-        setSelectedKey(null)
         setSelectedRecord(null);
     }
 
@@ -177,18 +207,6 @@ const FlatFile = () => {
         setOpenCreateModal(false);
       }
 
-    const handleFileDelete = ()=>{
-        if(selectedRecord === null){
-            if(alertActive){
-                messageApi.info('Please Select a file')
-                setAlertActive(false);
-                setTimeout(()=>setAlertActive(true),3000);
-            }
-        }
-       else{
-           setOpenDeleteModal(true);
-       }
-    }
 
     const hideDeleteModal = () => {  
         setOpenDeleteModal(false); 
@@ -226,7 +244,6 @@ const FlatFile = () => {
             }
         })
         .finally(()=>{
-            setSelectedKey(null)
             setSelectedRecord(null);
 
             dispatch(getFileSlice())
@@ -254,7 +271,6 @@ const FlatFile = () => {
             }
         })
         .finally(()=>{
-            setSelectedKey(null);
             setSelectedRecord(null);
 
             dispatch(getFileSlice())
@@ -274,20 +290,28 @@ const FlatFile = () => {
             {contextHolder}    
             <div className="d-flex justify-content-between align-items-center mb-2" style={{ overflowX: "auto"}}>
             <div className='d-flex'>  
-            <label style={{color: "skyblue",fontSize: "20px",marginLeft:"20px",marginRight: "20px",whiteSpace: "nowrap"}}> Files </label>   
+            <label style={{fontSize: "30px",fontWeight : "600",marginLeft:"20px",marginRight: "20px",whiteSpace: "nowrap"}}> Files </label>   
             <CustomSelectManageProjects value={selectProjectId} handleChange={handleProjectSelect} projects={allProjects}/>
             </div>  
             <div className='d-flex mx-4 gap-3'>
-            <Button onClick={handleFileCreate} style={{ fontSize: '14px', marginRight:"10px" }}> Create </Button>   
-            <Button onClick={handleFileDelete} style={{ fontSize: '14px', marginRight:"10px" }}>  Delete  </Button>  
-            {/* <Button onClick={handleFileRename} style={{ fontSize: '14px', marginRight:"10px" }}>  Rename  </Button>   */}
-            <Search  
-            placeholder="Search by File Name, File Type, Table Name, or Sheet"  
-            onSearch={(e) => handleSearch(e)}  
-            enterButton  
-            onChange={(e) => handleSearchChange(e)}  
-            style={{ minWidth: "300px", maxWidth: "300px", marginRight: "10px", marginBottom: "1px", maxHeight: "32px" }} />
-            </div>                    
+            {/* <Button onClick={''} style={{ fontSize: '14px', marginRight:"10px" }}>  Reupload  </Button>   */}
+             <div className='search-box me-4'>
+                <Search  
+                prefix={<img src="/search.png" alt="Search" style={{ width: "20px", height: "20px" }} />}
+                placeholder="Search by File Name, File Type, Table Name, or Sheet"  
+                onSearch={(e) => handleSearch(e)}  
+                onChange={(e) => handleSearchChange(e)}  
+                style={{ minWidth: "300px", maxWidth: "300px", marginRight: "10px", marginBottom: "1px", maxHeight: "32px" }} />
+            </div>
+            <Button
+                className='primary new-project-btn' 
+                style={{ fontSize: '14px' }}
+                onClick={handleFileCreate}
+                icon={<img src="/plus-icon.png" alt="" style={{ width: "20px", height: "20px" }} />} 
+                >
+                    New File  
+            </Button>
+            </div>
             </div>
             <Table className='flatFile' columns={columns} dataSource={filesData} pagination={{ pageSize: 10}} style={{overflowX:"auto",marginTop:"10px"}}/>  
             <CustomCreateFormFileModal openCreateModal={openCreateModal} hideCreateModal={hideCreateModal} loadFiles={loadFiles}/>
