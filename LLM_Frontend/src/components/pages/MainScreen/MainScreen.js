@@ -26,16 +26,16 @@ import { FaLink } from "react-icons/fa6";
 import { ToastContainer } from 'react-toastify';
 import { IoHomeOutline } from 'react-icons/io5';
 import urls from '../../utils/base_url';
-
+import { IoIosMenu } from "react-icons/io";
 const items = [  
   {  
     key: '/',  
-    icon: <IoHomeOutline  className='fs-4' />,  
+    icon: <img src="/home.png" alt="home" />,  
     label: 'Home',
   }, 
   { 
     key:'/project/manageprojects',
-    icon: <FaDiagramProject  className='fs-4'/>,  
+    icon: <img src="/project-sidebar.png" alt="project" />,   
     label: 'Project',
   },   
   // {  
@@ -92,8 +92,8 @@ const items = [
   //   ]},
      {  
     key: '/connections/flatfile',  
-    icon: <i className={'fas fa-upload'}></i> ,  
-    label: 'Tables',
+       icon: <img src="/upload-sidebar.png" alt="upload" />,  
+    label: 'Upload',
   },    
   // {
   //   key: '/reports',
@@ -102,7 +102,7 @@ const items = [
   // },
   {
     key : '/workspace',
-     icon:<i className={'fas fa-blog'}></i>,  
+     icon:<img src="/workspace-sidebar.png" alt="workspace" />,  
     label: 'My WorkSpace',
   }
 ];
@@ -143,54 +143,82 @@ const MainScreen = () =>
      <ToastContainer
       position='top-center' autoClose={2500} hideProgressBar={false} closeOnClick newestOnTop={true} rtl={false} pauseOnFocusLoss
       draggable  pauseOnHover theme='light'/>
-          <Header style={{ padding: 0,maxHeight:"50px" }} className='d-flex justify-content-between ps-3 pe-5'>  
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent:'space-between',width:"100%" }}>
-            <div>
-              <img src='https://etimg.etb2bimg.com/photo/117021568.cms' className='rounded-circle' alt='logo' style={{width:'45px', height:"45px",}}/>
-            <Button  
-            type="text"  
-            icon={collapsed ? <GiHamburgerMenu /> : <GiHamburgerMenu />}  
-            onClick={() => setCollapsed(!collapsed)}  
-            style={{  
-              fontSize: '16px',
-              width: 64,  
-              height: 64,  
-              marginLeft: collapsed ? '20px' : '165px' // Add some space between buttons
-            }}  
-          />
-          
-            </div>
-            <div>
-                  <Dropdown  
-        overlay={  
-          <Menu>  
-            {profileItems.map(item => (  
-              <Menu.Item key={item.key}>  
-                {item.icon} {item.label}  
-              </Menu.Item>  
-            ))}  
-          </Menu>  
-        }  
-        placement="bottomRight"  
-        arrow  
-      >   
-        <LiaUserCircleSolid style={{ width: "30px", height: "30px",cursor:"pointer" }} />  
-      </Dropdown>  
-            </div>
-    </div>
-          </Header>  
-         
       <Layout hasSider>  
-        <Sider trigger={null} collapsible collapsed={collapsed} className='main-part' theme='dark' style={{maxWidth:"15px"}} width={"10px"}>  
+        <Sider trigger={null} collapsible collapsed={collapsed} className='main-part sidebar' theme='dark' style={{maxWidth:"15px"}} width={"10px"}>  
+          <div className={`logo_sidebar ${collapsed ? 'collapsed' : ''}`}>
+            {!collapsed && <img src="/logo-sidebar.svg" alt="logo" className='sidebar-logo' />}
+            {!collapsed && <Button
+              type="text"
+              icon={<img src="/sidebar-collapse.png" alt="collapse-icon" className='collapse-icon' />}
+              onClick={() => setCollapsed(!collapsed)}
+              className='collapse-icon'
+            />
+
+            }
+            {collapsed && <Button
+              type="text"
+              icon={<IoIosMenu size={35} className='fs-5' color='#fff' />}
+              onClick={() => setCollapsed(!collapsed)}
+            // className='collapse-icon'
+            />}
+          </div>
+          <div className="nav-menu">
           <Menu  
             theme="dark"  
             mode="inline"  
+              className='sidebar-menu'
             selectedKeys={[selectedKey]}
             onClick={handleMenuClick} 
             items={items}  
           />  
+          </div>
+          <div className="user-profile">
+            <div className="user-avatar">KA</div>
+            {!collapsed && (
+              <div className="user-info">
+                <div className="user-name">Karthik Aditya</div>
+                <div className="user-role">Super User</div>
+              </div>
+            )}
+          </div>
         </Sider>  
         <Layout>  
+          <Header style={{ padding: 0, maxHeight: "50px" }} className='d-flex justify-content-between ps-3 pe-5'>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: "100%" }}>
+              <div>
+                <img src='https://etimg.etb2bimg.com/photo/117021568.cms' className='rounded-circle' alt='logo' style={{ maxWidth:'90px' }} />
+                {/* <Button
+                  type="text"
+                  icon={collapsed ? <GiHamburgerMenu /> : <GiHamburgerMenu />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  style={{
+                    fontSize: '16px',
+                    width: 64,
+                    height: 64,
+                    marginLeft: collapsed ? '20px' : '165px' // Add some space between buttons
+                  }}
+                /> */}
+
+              </div>
+              <div>
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      {profileItems.map(item => (
+                        <Menu.Item key={item.key}>
+                          {item.icon} {item.label}
+                        </Menu.Item>
+                      ))}
+                    </Menu>
+                  }
+                  placement="bottomRight"
+                  arrow
+                >
+                  <LiaUserCircleSolid style={{ width: "30px", height: "30px", cursor: "pointer" }} />
+                </Dropdown>
+              </div>
+            </div>
+          </Header>  
           <Content  
             style={{  
               // margin: '24px 16px',  
@@ -198,8 +226,8 @@ const MainScreen = () =>
               overflowY:"scroll",  
               backgroundRepeat:"no-repeat",
               backgroundSize:"cover",
-              backgroundColor:"#fff",
-              backgroundImage: `url(${"https://www.yash.com/wp-content/themes/html5blank-stable/images/services/service-offeringBG.png"}`,  
+              backgroundColor:"#f9fafb",
+              // backgroundImage: `url(${"https://www.yash.com/wp-content/themes/html5blank-stable/images/services/service-offeringBG.png"}`,  
             }}  
           >  
             <Outlet/>  

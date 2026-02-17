@@ -203,18 +203,20 @@ const WorkSpace = () => {
     <div className="w-100 px-2">
       <Meta title="WorkSpace" />
       {contextHolder}
-      <div className="options_header" style={{ overflowX: "auto", marginTop: "-10px" }}>
+      <div className="options_header" style={{ overflowX: "auto", marginTop: "20px" }}>
         <div style={{ flex: "0 0 3%", display: "flex", justifyContent: "space-between" }}>
           <Form.Item>
-            <label style={{ color: "skyblue", fontSize: "20px", marginRight: "20px", marginLeft: "10px" }}>WorkSpace</label>
+            <h1 className="page-title">WorkSpace</h1>
           </Form.Item>
         </div>
 
         <div style={{ flex: "0 0 20%", display: "flex", justifyContent: "space-around" }}>
-          <Form.Item label="Project" className="mb-0" style={{ minWidth: 200, maxWidth: 200 }}>
+          {/* <Form.Item label="Project" className="mb-0" style={{ minWidth: 200, maxWidth: 200 }}> */}
+          <div className="custom-selects">
             <Select
-              style={{ width: 130 }}
+              style={{ minWidth: 120, maxWidth: 240 }}
               onChange={handleProjectChange}
+              prefix="Project"
               key={formik.values.current_project || undefined}
               value={formik.values.current_project || undefined}
               dropdownStyle={{ overflowY: "auto" }}
@@ -225,13 +227,16 @@ const WorkSpace = () => {
                 </Option>
               ))}
             </Select>
-          </Form.Item>
+            </div>  
+          {/* </Form.Item> */}
 
-          <Form.Item label="File" className="mb-0" style={{ minWidth: 200, maxWidth: 200 }}>
+          {/* <Form.Item label="File" className="mb-0" style={{ minWidth: 200, maxWidth: 200 }}> */}
+          <div className="custom-selects mx-2">
             <Select
-              style={{ width: 130 }}
+              style={{ minWidth: 120, maxWidth: 240 }}
               key={formik.values.selected_file || undefined}
               value={formik.values.current_file || undefined}
+              prefix="File"
               onChange={handleFileChange}
               dropdownStyle={{ overflowY: "auto" }}
             >
@@ -242,12 +247,15 @@ const WorkSpace = () => {
                   </Option>
                 ))}
             </Select>
-          </Form.Item>
+          </div>
+          {/* </Form.Item> */}
 
-          <Form.Item label="Scenario" className="mb-0" style={{ minWidth: 240, maxWidth: 240 }}>
+          {/* <Form.Item label="Scenario" className="mb-0" style={{ minWidth: 240, maxWidth: 240 }}> */}
+          <div className="custom-selects mx-2">
             <Select
-              style={{ width: 160 }}
+              style={{ minWidth: 120, maxWidth: 240 }}
               onChange={handleScenarioChange}
+              prefix="Scenario"
               value={formik.values.scenario_description || undefined}
               dropdownStyle={{ overflowY: "auto" }}
             >
@@ -258,10 +266,11 @@ const WorkSpace = () => {
                   </Option>
                 ))}
             </Select>
-          </Form.Item>
+          </div>
+          {/* </Form.Item> */}
 
           <Form.Item>
-            <Input style={{ width: "200px", height: "30px" }} disabled value={formik.values.scenario_description} />
+            <Input style={{ width: "200px"}} disabled value={formik.values.scenario_description} />
           </Form.Item>
 
           <Form.Item>
