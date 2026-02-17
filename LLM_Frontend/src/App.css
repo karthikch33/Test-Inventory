@@ -1,3 +1,15 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import "./styles/dashboard.css";
+@import "./styles/table.css";
+
+body{
+  background-color: #f5f5f5;
+   font-family: "Inter", sans-serif !important;
+}
+:where(.css-dev-only-do-not-override-1odpy5d)[class^="ant-modal"], :where(.css-dev-only-do-not-override-1odpy5d)[class*=" ant-modal"]{
+     font-family: "Inter", sans-serif !important;
+}
 .logo{
   height: 32px;
   margin: 16px;
@@ -26,8 +38,14 @@
 }
 
 .ant-layout-header{
-  background-color: #f7f7f7 !important;
-  /* background-color: #f7f7f7 !important; */
+      background-color: white;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 82px;
 }
 
 .ant-layout-content{
@@ -106,7 +124,7 @@
 }
 
 :where(.css-dev-only-do-not-override-1htoz2s).ant-menu-dark .ant-menu-item-selected, :where(.css-dev-only-do-not-override-1htoz2s).ant-menu-dark>.ant-menu .ant-menu-item-selected {
-  background-color: inherit !important;
+  /* background-color: inherit !important; */
 }
 
 .options_header{
@@ -172,6 +190,12 @@ main::-webkit-scrollbar{
   background-color: #333767 !important;
 }
 
+
+
+/* :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper .ant-table-cell, :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper .ant-table-thead>tr>th, :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper .ant-table-tbody>tr>th, :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper .ant-table-tbody>tr>td, :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper tfoot>tr>th, :where(.css-dev-only-do-not-override-1odpy5d).ant-table-wrapper tfoot>tr>td{
+  padding : 0px !important;
+} */
+
 :where(.css-dev-only-do-not-override-1htoz2s).ant-radio-wrapper .ant-radio-input {
     position: absolute;
     inset: 0;
@@ -185,54 +209,15 @@ main::-webkit-scrollbar{
   width: 100% !important;
   overflow-X:'scroll' !important
 }
- 
-/* Header styling */
 
-
-.Connection .ant-table-thead > tr > th,.flatFile  .ant-table-thead > tr > th,.Manage_Project .ant-table-thead > tr > th,
-.SuccessFactors_Table .ant-table-thead > tr > th,.HanaTable .ant-table-thead > tr > th,.sapTable .ant-table-thead > tr > th,
-.Manage_BussinessRules_table .ant-table-thead > tr > th,.View_Bussiness_Rule_Table .ant-table-thead > tr > th,
-.SegmentTables .ant-table-thead > tr > th, .WorkSpaceTable .ant-table-thead > tr > th,
-.WorkSpaceTargetTable .ant-table-thead > tr > th, .PreLoad_Table .ant-table-thead > tr > th,
-.report_table .ant-table-thead > tr > th{
-  background-color: #333767 !important;
-  color: white !important;
-  padding: 0 0 0 0 !important;
-  height: 30px !important;
-  min-width: 90px !important;
-  text-align: center;
-  font-size: 13px;
-  border: 5px solid #333767 !important;
-} 
-
-
-
-.Connection .ant-table-tbody > tr > td,.flatFile  .ant-table-tbody > tr > td, .Manage_Project .ant-table-tbody > tr > td,
-.SuccessFactors_Table .ant-table-tbody > tr > td, .HanaTable .ant-table-tbody > tr > td, .sapTable  .ant-table-tbody > tr > td,
-.Manage_BussinessRules_table .ant-table-tbody > tr > td,.View_Bussiness_Rule_Table .ant-table-tbody > tr > td,
-.SegmentTables .ant-table-tbody > tr > td, .WorkSpaceTable .ant-table-tbody > tr > td,
-.WorkSpaceTargetTable .ant-table-tbody > tr > td , .PreLoad_Table .ant-table-tbody > tr > td
-{
-  color: #000; 
-  padding: 0 0 5px 0 !important;
-  min-width: 90px !important;
-  border: 1px solid rgba(140, 137, 137, 0.632) !important;
-}
-
-.flatFile .ant-table-tbody > tr > td, .Manage_Project .ant-table-tbody > tr > td{
-  text-align : center
-}
 
 .report_table{
   height: 70vh !important;
   overflow-y: scroll !important;
 }
 
-.report_table .ant-table-tbody > tr > td {
-  color: #000; 
-  padding: 7px 0px 7px 0px !important;
-  border: 0.1px solid #fff;
-}
+
+ .WorkSpaceTable table{ table-layout: fixed !important;}
 
 .first-child-row > td {
   border-top: 2px solid #68a1d5 !important;
@@ -267,69 +252,111 @@ main::-webkit-scrollbar{
   justify-content: start;
 }
 
-
-.ant-table .ant-table-thead > tr > th:nth-last-child() {  
+/* .ant-table .ant-table-thead > tr > th:nth-child(1) {  
   text-align: center; 
 }
 
+.ant-table .ant-table-thead > tr > th:nth-last-child() {  
+  text-align: center; 
+} */
+
 .options_header{
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   flex-direction: row;
 }
+
+.connection-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.connection-type-card {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.connection-type-card:hover {
+  border-color: #1677ff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.file-path-container {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 12px;
+  padding: 4px;
+  height: 48px;
+}
+
+.file-path-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.browse-btn-inside {
+  background-color: #e6f0ff;
+  color: #1677ff;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.browse-btn-inside:hover {
+  background-color: #d4e6ff;
+}
+
+
+
 
 /* .options_header::-webkit-scrollbar {  
   display: none;
 }   */
 
 
-.ant-tabs-tab{
-  border: 1px solid #80808068 !important;
+:where(.css-dev-only-do-not-override-1odpy5d).ant-tabs-card >.ant-tabs-nav .ant-tabs-tab, :where(.css-dev-only-do-not-override-1odpy5d).ant-tabs-card >div>.ant-tabs-nav .ant-tabs-tab
+.ant-tabs-tab-btn.ant-tabs-tab-active{
+      border: 1px solid #80808068 !important;
+    background:rgba(249, 250, 251, 1) !important;
+    color: rgba(26, 115, 232, 1) !important;
+    font-weight: 500;
+
 }
 
-.bussiness_rules_table .ant-table .ant-table-thead > tr > th, .WorkSpaceTable .ant-table .ant-table-thead > tr > th{
-  border: 1px solid rgba(140, 137, 137, 0.632) !important;
-  text-align: center;
+:where(.css-dev-only-do-not-override-1odpy5d).ant-tabs-card >.ant-tabs-nav .ant-tabs-tab-active, :where(.css-dev-only-do-not-override-1odpy5d).ant-tabs-card >div>.ant-tabs-nav .ant-tabs-tab-active{
+    border: 1px solid #80808068 !important;
+    background: rgba(74, 85, 101, 1) !important;
+    color: rgba(255, 255, 255, 1) !important;
+}
+:where(.css-dev-only-do-not-override-1odpy5d).ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn{
+  color: rgba(255, 255, 255, 1) !important;
 }
 
-.bussiness_rules_table .ant-table .ant-table-tbody > tr > td{
-  width: 150px !important;
-  padding: 0px !important;
-  border: 1px solid rgba(140, 137, 137, 0.112) !important;
-}
 
-.WorkSpaceTable .ant-table .ant-table-tbody > tr > td{
-  width: 150px !important;
-  padding: 0px !important;
-  background-color: #fff !important;
-}
-
-.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(1){  
+.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(9){  
   text-align: center; 
   width : 85px !important;
 }
 
-.PreLoad_Table .ant-table .ant-table-tbody > tr > td:nth-child(1){
+.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(4){  
   text-align: center; 
-  width: 10px !important;
-  min-width: 27px !important;
-  max-width: 27px !important;
 }
 
-.PreLoad_Table .ant-table .ant-table-thead > tr > th:nth-child(1){
-  text-align: center; 
-  width: 10px !important;
-  min-width: 27px !important;
-  max-width: 27px !important;
-}
-
-.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-last-child(){  
-  text-align: center; 
-  width : 85px !important;
-}
-
-
-.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(5), .WorkSpaceTable .ant-table .ant-table-tbody > tr > td:nth-child(5){  
+.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(5){  
   text-align: center; 
   width: 60px !important;
 }
@@ -344,16 +371,21 @@ main::-webkit-scrollbar{
 
 .bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(7) label,
 .WorkSpaceTable .ant-table .ant-table-tbody > tr > td:nth-child(7) label {
-    display: block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    text-align: center;
     width: 100%;
 }
 
 
-.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(8), .WorkSpaceTable .ant-table .ant-table-tbody > tr > td:nth-child(8){  
-  text-align: center; 
+.bussiness_rules_table .ant-table .ant-table-tbody > tr > td:nth-child(8), 
+.WorkSpaceTable .ant-table .ant-table-tbody > tr > td:nth-child(8){  
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis !important;
+    width: 100%;
+    text-align: center;
 }
 
 .WorkSpaceTable .ant-table .ant-table-tbody > tr > td:nth-child(1){  
@@ -400,18 +432,43 @@ main::-webkit-scrollbar{
 .WorkSpaceTargetTable .ant-table-thead > tr > th {
   position: sticky;
   top: 0;
-  background-color: white;
+  /* background-color: white; */
   font-size: 10px !important;
   height: 30px !important;
-  border: 1px solid rgba(140, 137, 137, 0.632) !important;
+  /* border: 1px solid rgba(140, 137, 137, 0.632) !important; */
   text-align: center;
   z-index: 1;
 }
 
-.WorkSpaceTargetTable .ant-table-tbody > tr > td {
+/* .WorkSpaceTargetTable .ant-table-tbody > tr > td {
   border: 1px solid rgba(140, 137, 137, 0.13) !important;
   text-align: center;
+
+} */
+
+.WorkSpaceTargetTable .ant-table-tbody > tr > td, .Validation_Table .ant-table-tbody > tr > td,
+.PreLoad_Table .ant-table-tbody > tr > td{
+  /* border: 1px solid rgba(140, 137, 137, 0.13) !important;[ */
+  text-align: center;
+  white-space: nowrap;       /* Prevent text from wrapping */
+  overflow: hidden;          /* Hide overflowing text */
+  text-overflow: ellipsis;   /* Show ... for long text */
+  max-width: 150px;          /* Fixed width */
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+/* On hover, expand width smoothly */
+.WorkSpaceTargetTable .ant-table-tbody > tr > td:hover, .Validation_Table .ant-table-tbody > tr > td:hover,
+.PreLoad_Table .ant-table-tbody > tr > td:hover {
+  white-space: normal;       /* Allow full text */
+  overflow: visible;
+  background: #f9f9f9;       /* Optional: light background */
+  z-index: 10;               /* Show above other cells */
+  width: auto;
+  min-width: 150px;
+}
+
 
 .table-container {
   max-height: 100%;
@@ -422,7 +479,7 @@ main::-webkit-scrollbar{
   position: sticky;
   top: 0;
   background-color: white;
-  font-size: 10px !important;
+  font-size: 12px !important;
   height: 30px !important;
   z-index: 1;
 }
@@ -430,7 +487,7 @@ main::-webkit-scrollbar{
 .WorkSpaceTable .ant-table-tbody > tr > td{
   padding: 0px !important;
   margin: 0px !important;
-  font-size: 10px;
+  font-size: 13px;
   min-height: 0px !important;
 }
 
@@ -513,28 +570,16 @@ main::-webkit-scrollbar{
   transform: translate(340.00925827026367 185) !important;
 } */
 
-.PreLoad_Table .ant-table-tbody > tr > td{ 
+.PreLoad_Table .ant-table-tbody > tr > td:nth-child(even) { 
+  background: #b9c1b942; 
   padding: 5px !important;
   border-bottom: 1px solid #ddd !important;
-  border-right: 1px solid #ddd !important;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
-
 
 .PreLoad_Table .ant-table-tbody > tr > td:nth-child(odd) { 
   background: #ffffff; 
-  padding: 5px !important;  
+  padding: 5px !important;
 }
 
 
-/* Global CSS */
-.ant-dropdown, .ant-dropdown-menu, .ant-select-dropdown, .ant-select-dropdown .ant-select-item {
-  background: #fff !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-.ant-dropdown-menu, .ant-select-dropdown {
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08), 0 3px 6px rgba(0,0,0,0.05);
-}
+

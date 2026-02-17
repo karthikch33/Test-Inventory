@@ -7,7 +7,7 @@ import { createProjectSlice, deleteProjectsSlice, getProjectsSlice, updateProjec
 import { toast, ToastContainer } from 'react-toastify';
 import CustomInput from '../CustomInput';
 import Meta from '../../utils/Meta';
-
+import { CiSearch } from "react-icons/ci";
 const ManageProjects = () => {  
     const {Search} = Input
     
@@ -344,16 +344,18 @@ const ManageProjects = () => {
         <div className="container-fluid">
         <div className='d-flex justify-content-between align-items-center mb-2' style={{overflowX:"auto"}}>
         <div>
-        <label style={{ color: "skyblue", fontSize: "20px",marginRight:"20px",marginLeft:"20px" }}>Projects</label>  
+        <h1 className="page-title">Projects</h1>  
         </div>
-        <div className="d-flex mx-4 gap-3">  
+        <div className="d-flex gap-3">  
         <Button className='primary' style={{fontSize:'14px'}} onClick={showCreateModal}> Create  </Button>  
         <Button onClick={showEditModal} className='primary' style={{fontSize: '14px'}}>  Edit  </Button>  
         <Button onClick={showDeleteModal} className='type-primary' style={{ fontSize: '14px' }}> Delete  </Button>  
+        <div className="search-box">
         <Search  
-        placeholder="Search by Project Name, Created By or Description" onSearch={(e) => handleSearch(e)} enterButton onChange={(e) => handleSearchChange(e)}
-        style={{ minWidth: "300px", maxWidth: "300px", marginRight: "10px", marginBottom: "1px", maxHeight: "32px" }} 
-        />    
+        placeholder="Search by Project Name, Created By or Description" prefix={CiSearch} onSearch={(e) => handleSearch(e)} enterButton onChange={(e) => handleSearchChange(e)}
+        style={{ minWidth: "300px", maxWidth: "300px", marginRight: "0", marginBottom: "1px", maxHeight: "32px" }} 
+        /> 
+        </div>   
         </div>  
         </div>
         <Table className='Manage_Project' columns={columns}  dataSource={projectData} pagination={{ pageSize: 13 }} style={{overflowX:"auto"}}/> 

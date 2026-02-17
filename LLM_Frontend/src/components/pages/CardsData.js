@@ -2,19 +2,22 @@ export const cardsData = [
     {
         title: 'Project',
         description: 'Manage Projects.',
-        icon: 'fas fa-diagram-project',
-        link:'/project/manageprojects' 
+        icon: '/project.png',
+        link:'/project/manageprojects',
+        btnText: 'Add Project'
     },
     {
       title: 'Uploads',
       description: 'Upload Your Files',
-      icon: 'fas fa-upload', 
-      link:'/connections/flatfile'
+      icon: '/upload.png', 
+      link:'/connections/flatfile',
+      btnText: 'Browse Files'
     },
     {
       title: 'Work Space',
       description: 'Extract & Transform with ease.',
-      icon: 'fas fa-brain', 
-      link:'/workspace'
+      icon: '/workspace.png', 
+      link:'/workspace',
+      btnText: 'Go to Workspace'
     }
 ];
