@@ -75,12 +75,12 @@ const getFormattedTime = () => {
         {messagess?.map(msg => (  
           <div  
             key={msg?.id}  
-            className={`d-flex ${msg.sender === 'me' ? 'justify-content-end' : 'justify-content-start'}`}  
+            className={`d-flex mb-3 ${msg.sender === 'me' ? 'justify-content-end' : 'justify-content-start'}`}  
           >  
-            <div className={`p-1 rounded ${msg.type === 'sent' ? 'text-dark' : 'bg-light text-dark'}`} style={{ fontSize: "10px" }}>  
+            <div className={`p-2 rounded ${msg.type === 'sent' ? 'bg-primary text-white' : 'bg-light text-dark'}`} style={{ fontSize: "14px", maxWidth: "70%" }}>  
               {msg?.text}  
-              <div className={`small text-end ${msg.type === 'sent' ? 'text-muted' : 'text-secondary'}`} style={{ fontSize: "8px" }}>  
-                {msg?.time}  
+              <div className={`small text-end ${msg.type === 'sent' ? 'text-white' : 'text-secondary'}`} style={{ fontSize: "12px" }}>  
+                {msg?.time}
               </div>  
             </div>  
           </div>  

@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import { getAllFilesByProjectIdSlice, getAllScenarioByFileIdSlice, getErrorColumnsTableSlice, getScenarioTableSlice } from "../../features/WorkSpace/workSpaceSlice";
 import Chat from "./Chat";
 import Meta from "../../utils/Meta";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const WorkSpace = () => {
   const projects = useSelector((state) => state.project.projects);
@@ -200,7 +201,7 @@ const WorkSpace = () => {
   }
 
   return (
-    <div className="w-100 px-2">
+    <div className="w-100 px-4">
       <Meta title="WorkSpace" />
       {contextHolder}
       <div className="options_header" style={{ overflowX: "auto", marginTop: "20px" }}>
@@ -274,14 +275,14 @@ const WorkSpace = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button onClick={handleExportRows} style={{ marginLeft: "20px" }}>
+            <Button className="btn-primary" onClick={handleExportRows} icon={<DownloadOutlined />} style={{ marginLeft: "20px" }}>
               Export
             </Button>
           </Form.Item>
         </div>
       </div>
 
-      <div className="row" style={{ height: "73vh", overflow: "auto", marginTop: "-15px" }}>
+      <div className="rows" style={{ height: "73vh", overflow: "auto", marginTop: "-15px" }}>
         <Splitter layout="horizontal" lazy style={{ height: "100%", width: "100%", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)" }}>
           <Splitter.Panel collapsible defaultSize="30%" min="10%" max="70%">
             <Chat
@@ -291,8 +292,7 @@ const WorkSpace = () => {
               load={setLoading}
             />
           </Splitter.Panel>
-
-          <div className="col-12 col-md-9 d-flex flex-column h-100">
+          <div className="d-flex flex-column h-100">
             <Splitter layout="vertical" lazy style={{ flex: 1, height: 200, boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)" }}>
               <Splitter.Panel style={{ flex: 1 }} collapsible defaultSize="40%" min="10%" max="70%">
                 <div className="table-container mb-3 flex-grow-1 scrollbar">
@@ -356,7 +356,7 @@ const WorkSpace = () => {
                 </div>
               </Splitter.Panel>
             </Splitter>
-          </div>
+           </div>
         </Splitter>
       </div>
     </div>
