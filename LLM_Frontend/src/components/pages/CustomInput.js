@@ -5,9 +5,9 @@ const CustomInput = (props) => {
     const {label,type,name,value,handleChange,blur,disabled,touched,error,placeholder} = props
   return (
    <>
-  
-        <label htmlFor="connection_name" className='col-12 form-label'>{label}</label> 
-
+    <div className="row mt-3 d-flex align-items-center" >  
+        <label htmlFor="connection_name" className='col-4'>{label}</label> 
+        <div className='col-8'>
         <Input
             type={type}
             name={name} 
@@ -16,10 +16,13 @@ const CustomInput = (props) => {
             placeholder={placeholder}
             onBlur={blur}
             disabled={disabled}   
-        />   
+        />  
+        </div>
+    </div>    
 
     <div className='row'>
-        <div className='col-12'>
+        <label className='col-4'></label>
+        <div className='col-8'>
         <div className="error" style={{overflowX:"auto"}}>
             {touched && error}
         </div>  
