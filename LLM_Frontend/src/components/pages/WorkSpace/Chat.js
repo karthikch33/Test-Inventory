@@ -77,7 +77,7 @@ const getFormattedTime = () => {
             key={msg?.id}  
             className={`d-flex mb-3 ${msg.sender === 'me' ? 'justify-content-end' : 'justify-content-start'}`}  
           >  
-            <div className={`p-1 rounded ${msg.type === 'sent' ? 'text-white' : 'bg-light text-dark'}`} style={{ fontSize: "14px" }}>  
+            <div className={`p-2 rounded ${msg.type === 'sent' ? 'bg-primary text-white' : 'bg-light text-dark'}`} style={{ fontSize: "14px", maxWidth: "70%" }}>  
               {msg?.text}  
               <div className={`small text-end ${msg.type === 'sent' ? 'text-white' : 'text-secondary'}`} style={{ fontSize: "12px" }}>  
                 {msg?.time}
