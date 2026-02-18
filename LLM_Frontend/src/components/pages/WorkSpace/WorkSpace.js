@@ -275,7 +275,7 @@ const WorkSpace = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button className="btn-primary" onClick={handleExportRows} icon={<DownloadOutlined />} style={{ marginLeft: "20px" }}>
+            <Button className="btn-primary" onClick={handleExportRows} icon={<DownloadOutlined />} style={{ marginLeft: "20px", fontSize:`16px` }}>
               Export
             </Button>
           </Form.Item>
