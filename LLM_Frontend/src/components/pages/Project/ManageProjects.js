@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Input, Table, Button, message, Radio, Modal, Space } from 'antd';
+import { useEffect, useState } from 'react';
+import { Input, Table, Button, message, Modal, Space, Tooltip } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { createProjectSlice, deleteProjectsSlice, getProjectsSlice, updateProjectsSlice } from '../../features/Project/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import CustomInput from '../CustomInput';
 import Meta from '../../utils/Meta';
+import { RiDeleteBinLine } from "react-icons/ri";
+import { FiEdit2 } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
 
 const ManageProjects = () => {
@@ -16,7 +17,6 @@ const ManageProjects = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [CreateEdit, setCreateEdit] = useState(null);
-    const [selectedKey, setSelectedKey] = useState(null);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [alertActive, setAlertActive] = useState(true);
     const [projectData, setProjectData] = useState();
@@ -115,18 +115,6 @@ const ManageProjects = () => {
 
     const columns = [
         {
-            title: 'Select',
-            dataIndex: 'selecteditem',
-            render: (text, record) => (
-                <div style={{ display: 'flex', justifyContent: 'start' }}>
-                    <Radio
-                        checked={selectedKey === record.project_id}
-                        onChange={() => handleRadioChange(record)}
-                    />
-                </div>
-            )
-        },
-        {
             title: 'Project Name',
             dataIndex: 'project_name',
             key: 'project_name',
@@ -146,8 +134,49 @@ const ManageProjects = () => {
             dataIndex: 'created_by',
             key: 'created_by'
         },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <Space className="justify-content-center">
+                    <Tooltip title="Edit">
+                        <Button
+                            type="text"
+                            
+                            icon={<FiEdit2 color='rgba(26, 115, 232, 1)'  className='fs-5'/>}
+                            onClick={() => handleActionEdit(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                        <Button
+                            type="text"
+                            danger
+                            icon={<RiDeleteBinLine className='fs-5' />}
+                            onClick={() => handleActionDelete(record)}
+                        />
+                    </Tooltip>
+                </Space>
+            ),
+        }
         
     ];
+
+    const handleActionEdit = (record)=>{    
+        const current_row_details = record;
+        
+        formik.setValues({
+            project_name: current_row_details.project_name,
+            project_description: current_row_details.description,
+        });
+        setOpenEditModal(true);
+        setCreateEdit('edit');
+        setSelectedRecord(current_row_details);
+    }
+
+    const handleActionDelete = (record)=>{
+        setSelectedRecord(record);
+        setOpenDeleteModal(true)
+    }
 
     const handleSearch = (e) => {
         const filteredData = partialProjectData?.filter(item => (
@@ -176,46 +205,10 @@ const ManageProjects = () => {
         return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
     }
 
-    const handleRadioChange = (record) => {
-        setSelectedKey(record.project_id);
-        setSelectedRecord(record);
-    };
-
-    const showEditModal = () => {
-        if (selectedRecord === null) {
-            if (alertActive) {
-                messageApi.info('Please Select a Project')
-                setAlertActive(false);
-                setTimeout(() => setAlertActive(true), 3000);
-            }
-        }
-        else {
-            formik.setValues({
-                project_name: selectedRecord.project_name,
-                project_description: selectedRecord.description,
-            });
-            setCreateEdit('edit');
-            setOpenEditModal(true);
-        }
-    };
-
     const hideEditModal = () => {
         setOpenEditModal(false);
         setCreateEdit(null);
     };
-
-    const showDeleteModal = () => {
-        if (selectedRecord === null) {
-            if (alertActive) {
-                messageApi.info('Please Select a Project')
-                setAlertActive(false);
-                setTimeout(() => setAlertActive(true), 3000);
-            }
-        }
-        else {
-            setOpenDeleteModal(true);
-        }
-    }
 
     const hideDeleteModal = () => {
         setOpenDeleteModal(false);
@@ -277,7 +270,6 @@ const ManageProjects = () => {
                 if (response?.payload?.status === 200) {
                     toast.success(`Project ${response?.payload?.data?.project_name} Updated Successfully`);
                     setSelectedRecord(null);
-                    setSelectedKey(null);
                     setOpenEditModal(false);
                 }
                 else if (response?.payload?.status === 302) {
@@ -346,15 +338,18 @@ const ManageProjects = () => {
                     <div>
                         <h1 className="page-title">Projects</h1>
                     </div>
-                    <div className="d-flex gap-3">
-                        <Button className='primary' style={{ fontSize: '14px' }} onClick={showCreateModal}> Create  </Button>
-                        <Button onClick={showEditModal} className='primary' style={{ fontSize: '14px' }}>  Edit  </Button>
-                        <Button onClick={showDeleteModal} className='type-primary' style={{ fontSize: '14px' }}> Delete  </Button>
-                        <div className="search-box">
-                            <Search
-                                placeholder="Search by Project Name, Created By or Description" prefix={CiSearch} onSearch={(e) => handleSearch(e)} enterButton onChange={(e) => handleSearchChange(e)}
-                                style={{ minWidth: "300px", maxWidth: "300px", marginRight: "0", marginBottom: "1px", maxHeight: "  " }}
-                            />
+                    <div className="d-flex ms-4 gap-3">
+                        <div className="search-wrapper">
+                            <div className="search-box">
+                                <Search placeholder="Search by Project Name, Created By or Description"
+                                    onSearch={(e) => handleSearch(e)}
+                                    onChange={(e) => handleSearchChange(e)}
+                                    prefix={<img src="/search.png" alt="Search" style={{ width: "20px", height: "20px" }} />    }
+                                    
+                                    style={{ minWidth: "300px", maxWidth: "300px", marginRight: "0", marginBottom: "1px", maxHeight: "32px" }}
+                                />
+                            </div>
+                            <Button className='primary new-project-btn' style={{ fontSize: '14px' }} onClick={showCreateModal} icon={<img src="/plus-icon.png" alt="" style={{ width: "20px", height: "20px" }} />} >  New Project  </Button>
                         </div>
                     </div>
                 </div>
