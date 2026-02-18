@@ -149,9 +149,10 @@ export const EditableChat = (props) =>{
                     bottom: '10px',   
                     right: '10px',   
                     zIndex: 1,
+                      background: 'rgba(26, 115, 232, 1)'
                   }}  
                 > 
-                  <IoSend/>      
+                  <IoSend color="white" />      
                 </button>  
               </div>  
             </div>  
