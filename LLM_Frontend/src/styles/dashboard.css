@@ -473,4 +473,6 @@ border-radius: 18px !important;
 .connection-header{
   padding-bottom: 5px !important;
 }
+
+.cursor-pointer{ cursor: pointer;}
  

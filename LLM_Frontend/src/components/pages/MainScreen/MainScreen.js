@@ -214,7 +214,8 @@ const MainScreen = () =>
                   placement="bottomRight"
                   arrow
                 >
-                  <LiaUserCircleSolid style={{ width: "30px", height: "30px", cursor: "pointer" }} />
+                  {/* <LiaUserCircleSolid style={{ width: "30px", height: "30px", cursor: "pointer" }} /> */}
+                  <img src="/setting.png" alt='Setting' className='cursor-pointer'/>
                 </Dropdown>
               </div>
             </div>
