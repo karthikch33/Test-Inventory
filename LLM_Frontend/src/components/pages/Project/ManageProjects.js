@@ -368,10 +368,16 @@ const ManageProjects = () => {
                     className='creare-project-modal'
                 >
                     <form onSubmit={formik?.handleSubmit} className="max-w-[300px] mx-auto">
-
-                        <CustomInput label='Project Name' name='project_name_create' value={formik?.values?.project_name_create}
+                        <label htmlFor="description_create" className="col-12 form-label mt-3" >Project Name <span className='text-danger'>*</span></label>
+                        <Input name='project_name_create' value={formik?.values?.project_name_create}
+                            onChange={formik?.handleChange} disabled={false} type="text"
+                            />
+                        <div className="error">
+                            {formik?.errors?.project_name_create && formik?.errors?.project_name_create}
+                        </div>
+                        {/* <CustomInput label='Project Name' name='project_name_create' value={formik?.values?.project_name_create}
                             handleChange={formik?.handleChange} disabled={false} type="text"
-                            touched={formik?.touched?.project_name_create} error={formik?.errors?.project_name_create} blur={formik?.handleBlur} />
+                            touched={formik?.touched?.project_name_create} error={formik?.errors?.project_name_create} blur={formik?.handleBlur} /> */}
 
                         {/* <CustomInput label='Description' name='project_description_create' value={formik?.values?.project_description_create}
                             handleChange={formik?.handleChange} disabled={false} type="text"
