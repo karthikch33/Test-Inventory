@@ -25,8 +25,8 @@ from datetime import datetime
 sys.path.append('../dqtool')
 from dqtool.dqtool import DQTool
 # setting path
-sys.path.append('../DMtool')
-from DMtool.dmtool import DMTool
+# sys.path.append('../DMtool')
+# from DMtool.dmtool import DMTool
 
 @api_view(['GET'])
 def home(request):
