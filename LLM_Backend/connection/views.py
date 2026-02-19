@@ -25,8 +25,8 @@ from datetime import datetime
 sys.path.append('../dqtool')
 from dqtool.dqtool import DQTool
 # setting path
-sys.path.append('../DMtool')
-from DMtool.dmtool import DMTool
+# sys.path.append('../DMtool')
+# from DMtool.dmtool import DMTool
 
 @api_view(['GET'])
 def home(request):
@@ -273,18 +273,31 @@ def read_excel_and_return_json(request):
         return Response({"error": "No file uploaded"}, status=400)
 
     try:
-        df = pd.read_excel(file_obj, sheet_name=0)
+        # FIX 1: Handle NaN during Excel read
+        df = pd.read_excel(file_obj, sheet_name=0, na_values=['', 'N/A', 'NA', 'null', 'NULL'])
+        df = df.fillna('')  # Convert ALL NaN → empty string
+        
         expected_cols = ['Business Scenario', 'Scenario Description', 'Status']
         if not all(any(expected_col.lower() == col.lower() for col in df.columns) for expected_col in expected_cols):
             return Response({"error": "Required columns missing in Excel sheet"}, status=400)
+        
         desc_col_name = next(col for col in df.columns if col.lower() == "scenario description".lower())
-        desc_map = {i+1: desc for i, desc in enumerate(df[desc_col_name].astype(str).tolist())}
-        print(df.head(5))
+        
+        # FIX 2: Safe conversion - NaN → empty string
+        descriptions = df[desc_col_name].astype(str).replace('nan', '').tolist()
+        desc_map = {i+1: desc for i, desc in enumerate(descriptions)}
+        
+        print("✅ Excel processed:", df.head(5))
+        print("✅ JSON safe map:", list(desc_map.items())[:3])
+        
         return Response(desc_map)
-
+        
     except Exception as e:
+        print(f"💥 Excel processing error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)
-    
+   
 
 @api_view(['POST'])
 def create_file(request):
