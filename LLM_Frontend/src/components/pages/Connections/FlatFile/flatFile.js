@@ -290,12 +290,12 @@ const FlatFile = () => {
             {contextHolder}    
             <div className="d-flex justify-content-between align-items-center mb-2" style={{ overflowX: "auto"}}>
             <div className='d-flex'>  
-            <label style={{fontSize: "30px",fontWeight : "600",marginLeft:"20px",marginRight: "20px",whiteSpace: "nowrap"}}> Files </label>   
+            <label style={{fontSize: "30px",fontWeight : "600", marginRight: "20px",whiteSpace: "nowrap"}}> Files </label>   
             <CustomSelectManageProjects value={selectProjectId} handleChange={handleProjectSelect} projects={allProjects}/>
             </div>  
-            <div className='d-flex mx-4 gap-3'>
+            <div className='d-flex'>
             {/* <Button onClick={''} style={{ fontSize: '14px', marginRight:"10px" }}>  Reupload  </Button>   */}
-             <div className='search-box me-4'>
+             <div className='search-box me-2'>
                 <Search  
                 prefix={<img src="/search.png" alt="Search" style={{ width: "20px", height: "20px" }} />}
                 placeholder="Search by File Name, File Type, Table Name, or Sheet"  
